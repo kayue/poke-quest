@@ -28,13 +28,8 @@ the answer.
 
 ## Tech
 
-- **Vite** + **React** + **TypeScript**
-- **XState v5** — the whole game flow (title → hero → mode → difficulty →
-  journey → battle → victory/defeat) is one state machine in
-  `src/game/machine.ts`. Battle animations are driven by the machine's timed
-  substates (`intro`, `answering`, `correct`, `wrong`, `enemyFaint`).
-- Pure CSS keyframe animations (idle bob, enemy hit/faint, attack sprite-sheet
-  effects, floating text, confetti).
+Built with **Vite** + **React** + **TypeScript**, with **XState v5** driving the
+game flow and pure CSS keyframes for the animations.
 
 ## Run it
 
@@ -42,19 +37,6 @@ the answer.
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # production build to dist/
-```
-
-## Project layout
-
-```
-src/
-  game/
-    data.ts        # heroes, enemies, stages, modes, difficulties
-    problems.ts    # maths problem + answer-tile generation
-    machine.ts     # XState v5 game machine
-  Battle.tsx       # the battle screen (reads machine substates for animation)
-  App.tsx          # router + title / selection / result screens
-  styles.css       # all styling & animations
 ```
 
 ## Credits & references
