@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { SnapshotFrom } from 'xstate'
-import type { gameMachine, GameEvent } from './game/machine'
-import {
-  PLAYER_MAX_HEARTS,
-  STAGES,
-  backgroundSrc,
-  effectSrc,
-  pokemonSrc,
-} from './game/data'
+import type { gameMachine, GameEvent } from './machine'
+import { PLAYER_MAX_HEARTS, STAGES } from './data'
+import { backgroundSrc, effectSrc, pokemonSrc } from '../../shared/assets'
 
 type Snapshot = SnapshotFrom<typeof gameMachine>
 type Send = (event: GameEvent) => void
@@ -181,7 +176,7 @@ function Equation({
   isCorrect,
   selected,
 }: {
-  problem: import('./game/problems').Problem | null
+  problem: import('./problems').Problem | null
   answered: boolean
   isCorrect: boolean
   selected: number | null

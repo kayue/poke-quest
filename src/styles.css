@@ -129,12 +129,13 @@ img {
 }
 
 /* ============================================================
-   Title screen
+   Title / Home screen
    ============================================================ */
-.title-screen {
+.title-screen,
+.home-screen {
   align-items: center;
   justify-content: center;
-  gap: 26px;
+  gap: 24px;
   padding: 24px;
   background:
     radial-gradient(circle at 50% 30%, #4a3d78 0%, #221b3c 70%);
@@ -646,4 +647,222 @@ img {
 @keyframes confetti-fall {
   0% { transform: translateY(0) rotate(0); }
   100% { transform: translateY(900px) rotate(720deg); }
+}
+
+/* ============================================================
+   Home screen activity cards
+   ============================================================ */
+.home-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 6px;
+}
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 16px;
+  border-radius: 20px;
+  border: 3px solid #1c1830;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+.home-card:hover { filter: brightness(1.08); }
+.home-card:active { transform: translateY(4px); }
+.home-card.math { background: linear-gradient(#7a5cd0, #533aa0); }
+.home-card.writing { background: linear-gradient(#e0714f, #b5432a); }
+.home-emoji { font-size: 44px; line-height: 1; }
+.home-card-title { font-family: var(--body-font); font-weight: 800; font-size: 24px; }
+.home-card-sub { font-size: 15px; color: rgba(255, 255, 255, 0.85); }
+
+/* ============================================================
+   Writing — Pokédex list
+   ============================================================ */
+.write-intro {
+  color: var(--muted);
+  font-size: 15px;
+  text-align: center;
+  margin: -4px 2px 2px;
+}
+.diff-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
+  border-radius: 18px;
+  border: 3px solid #1c1830;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+.diff-card:hover { filter: brightness(1.08); }
+.diff-card:active { transform: translateY(4px); }
+.diff-easy { background: linear-gradient(#3f9d5a, #2c6f40); }
+.diff-medium { background: linear-gradient(#d79a2b, #a5670f); }
+.diff-hard { background: linear-gradient(#d0524f, #9a2e2b); }
+.diff-emoji { font-size: 40px; line-height: 1; }
+.diff-info { flex: 1; text-align: left; }
+.diff-label { font-weight: 800; font-size: 26px; letter-spacing: 2px; }
+.diff-en { font-size: 14px; font-weight: 700; opacity: 0.85; letter-spacing: 0; }
+.diff-meta { font-size: 13px; color: rgba(255, 255, 255, 0.85); margin-top: 2px; }
+.diff-progress { font-size: 14px; font-weight: 800; white-space: nowrap; }
+
+.tier-pos {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--gold);
+  background: #0006;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.stroke-count { color: var(--muted); font-size: 15px; font-weight: 700; }
+.caption.good .stroke-count { color: var(--good); }
+
+/* ============================================================
+   Writing — practice screen
+   ============================================================ */
+.write-screen {
+  padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+  gap: 10px;
+  align-items: center;
+  background: radial-gradient(circle at 50% 20%, #3a3160 0%, #1d1834 75%);
+}
+.write-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.write-progress {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.char-chip {
+  min-width: 34px;
+  height: 40px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 2px solid transparent;
+}
+.chip-todo { background: rgba(255,255,255,0.08); color: var(--muted); }
+.chip-active {
+  background: var(--gold);
+  color: #5a3200;
+  border-color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(255,210,63,0.7);
+}
+.chip-done { background: var(--good); color: #0c3a15; }
+
+.write-poke {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.write-sprite {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  animation: bob 1.8s ease-in-out infinite;
+}
+.write-names { text-align: left; }
+.write-zh { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 2px; }
+.write-pinyin {
+  font-size: 15px;
+  color: var(--gold);
+  /* System stack covers pīnyīn macrons (ū/ī) that the display font lacks. */
+  font-family: -apple-system, 'Segoe UI', system-ui, 'Noto Sans', sans-serif;
+  font-weight: 700;
+}
+.write-pinyin.big { font-size: 20px; }
+.write-en { font-size: 14px; color: var(--muted); }
+.write-en.big { font-size: 18px; }
+
+.caption {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--ink);
+  min-height: 24px;
+  transition: color 0.2s;
+}
+.caption.good { color: var(--good); font-size: 22px; }
+
+/* The hanzi practice grid (田字格) */
+.hanzi-stage { position: relative; }
+.hanzi-stage.shake { animation: tile-wrong 0.45s ease; }
+.hanzi-box {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.hanzi-grid {
+  position: absolute;
+  inset: 0;
+  background: #fffdf7;
+  border: 3px solid #e0b45f;
+  border-radius: 16px;
+}
+/* dashed cross + diagonals like practice paper */
+.hanzi-grid::before,
+.hanzi-grid::after {
+  content: '';
+  position: absolute;
+  background: repeating-linear-gradient(
+    to right, #f2b6ae 0 8px, transparent 8px 16px
+  );
+}
+.hanzi-grid::before { left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-1px); }
+.hanzi-grid::after {
+  top: 0; bottom: 0; left: 50%; width: 2px; transform: translateX(-1px);
+  background: repeating-linear-gradient(
+    to bottom, #f2b6ae 0 8px, transparent 8px 16px
+  );
+}
+.hanzi-target { position: absolute; inset: 0; }
+.hanzi-target svg { display: block; }
+.hanzi-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 800;
+  color: #8a7d63;
+  font-size: 18px;
+  gap: 4px;
+}
+.hanzi-status.err { color: var(--bad-dark); font-size: 16px; }
+.hanzi-status.err span { font-size: 12px; color: #8a7d63; }
+
+.write-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.celebrate-name {
+  font-family: var(--body-font);
+  font-weight: 800;
+  font-size: 40px;
+  letter-spacing: 4px;
+  color: #fff;
 }

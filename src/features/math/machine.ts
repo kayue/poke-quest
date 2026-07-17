@@ -1,5 +1,5 @@
-// XState v5 machine that drives the whole game flow:
-// title -> hero select -> mode -> difficulty -> journey -> battle -> victory/defeat
+// XState v5 machine for the Maths Quest activity:
+// hero select -> mode -> difficulty -> journey -> battle -> victory/defeat -> exit
 import { setup, assign } from 'xstate'
 import {
   ENEMIES,
@@ -39,7 +39,6 @@ export interface GameContext {
 }
 
 export type GameEvent =
-  | { type: 'PLAY' }
   | { type: 'SELECT_HERO'; hero: Hero }
   | { type: 'SELECT_MODE'; mode: Operation }
   | { type: 'SELECT_DIFFICULTY'; difficulty: Difficulty }
@@ -122,10 +121,12 @@ export const gameMachine = setup({
 }).createMachine({
   id: 'game',
   context: initialContext,
-  initial: 'title',
+  initial: 'heroSelect',
   states: {
-    title: {
-      on: { PLAY: 'heroSelect' },
+    // Reached when the player leaves the Maths Quest entirely. MathGame
+    // watches for this and returns to the app home screen.
+    exit: {
+      type: 'final',
     },
 
     heroSelect: {
@@ -134,7 +135,7 @@ export const gameMachine = setup({
           target: 'modeSelect',
           actions: assign({ hero: ({ event }) => event.hero }),
         },
-        BACK: 'title',
+        BACK: 'exit',
       },
     },
 
@@ -205,7 +206,7 @@ export const gameMachine = setup({
     battle: {
       initial: 'intro',
       on: {
-        HOME: 'title',
+        HOME: 'exit',
       },
       states: {
         intro: {
@@ -286,14 +287,14 @@ export const gameMachine = setup({
 
     victory: {
       on: {
-        HOME: 'title',
+        HOME: 'exit',
         RETRY: 'journeySelect',
       },
     },
 
     defeat: {
       on: {
-        HOME: 'title',
+        HOME: 'exit',
         RETRY: 'journeySelect',
       },
     },

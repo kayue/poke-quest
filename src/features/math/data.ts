@@ -1,4 +1,4 @@
-// Static game data: hero roster, enemy roster, stages, operation modes.
+// Static data for the Maths Quest game: hero roster, enemies, stages, modes.
 
 export type Operation = 'add' | 'sub' | 'mul' | 'mixed'
 
@@ -139,13 +139,3 @@ export const DIFFICULTIES: { id: Difficulty; label: string; emoji: string }[] = 
 ]
 
 export const PLAYER_MAX_HEARTS = 5
-
-export function pokemonSrc(sprite: string) {
-  return `/assets/pokemon/${sprite}`
-}
-export function backgroundSrc(bg: string) {
-  return `/assets/backgrounds/${bg}`
-}
-export function effectSrc(name: string) {
-  return `/assets/effects/${name}`
-}
