@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { SnapshotFrom } from 'xstate'
 import type { gameMachine, GameEvent } from './machine'
-import { PLAYER_MAX_HEARTS, STAGES } from './data'
+import { PLAYER_MAX_HP, STAGES } from './data'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 
 type Snapshot = SnapshotFrom<typeof gameMachine>
@@ -79,9 +79,11 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
       enemySprite={enemy?.def.sprite ?? 'pikachu.png'}
       enemyHp={enemy?.hp ?? 0}
       enemyMaxHp={enemy?.maxHp ?? 1}
+      enemyLevel={enemy?.maxHp}
       heroSprite={hero.sprite}
-      hearts={ctx.hearts}
-      maxHearts={PLAYER_MAX_HEARTS}
+      heroName={hero.name}
+      heroHp={ctx.hp}
+      heroMaxHp={PLAYER_MAX_HP}
       streak={ctx.streak}
       phase={phase}
       pulse={fx.pulse}

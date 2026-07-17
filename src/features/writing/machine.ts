@@ -13,7 +13,8 @@ import {
   type WriteDifficulty,
 } from './data'
 
-export const WRITING_MAX_HEARTS = 5
+export const WRITING_MAX_HP = 100
+export const WRITING_HURT = 20 // HP lost per mistake (5 mistakes = faint)
 
 export interface WritingContext {
   difficulty: WriteDifficulty
@@ -21,7 +22,7 @@ export interface WritingContext {
   charIndex: number // which character of the current name
   enemyMaxHp: number // total strokes of the current name
   enemyHp: number // strokes still to write
-  hearts: number
+  hp: number // player HP (refills each enemy)
   defeated: number
   streak: number
   bestStreak: number
@@ -53,7 +54,7 @@ const initialContext: WritingContext = {
   charIndex: 0,
   enemyMaxHp: 1,
   enemyHp: 1,
-  hearts: WRITING_MAX_HEARTS,
+  hp: WRITING_MAX_HP,
   defeated: 0,
   streak: 0,
   bestStreak: 0,
@@ -72,7 +73,7 @@ export const writingMachine = setup({
     hasMoreChars: ({ context }) =>
       context.charIndex + 1 < chineseChars(currentName(context)).length,
     hasNextPokemon: ({ context }) => context.pos + 1 < tierLength(context),
-    fatal: ({ context }) => context.hearts <= 1,
+    fatal: ({ context }) => context.hp <= WRITING_HURT,
   },
 }).createMachine({
   id: 'writing',
@@ -101,13 +102,12 @@ export const writingMachine = setup({
       states: {
         intro: {
           entry: assign(({ context }) => {
-            const name = currentName(context)
-            const hp = totalStrokes(name)
+            const strokes = totalStrokes(currentName(context))
             return {
-              enemyMaxHp: hp,
-              enemyHp: hp,
+              enemyMaxHp: strokes,
+              enemyHp: strokes,
               charIndex: 0,
-              hearts: WRITING_MAX_HEARTS,
+              hp: WRITING_MAX_HP, // refill each enemy
               streak: 0,
             }
           }),
@@ -128,11 +128,11 @@ export const writingMachine = setup({
               {
                 guard: 'fatal',
                 target: '#writing.defeat',
-                actions: assign({ hearts: 0, streak: 0 }),
+                actions: assign({ hp: 0, streak: 0 }),
               },
               {
                 actions: assign({
-                  hearts: ({ context }) => context.hearts - 1,
+                  hp: ({ context }) => context.hp - WRITING_HURT,
                   streak: 0,
                 }),
               },

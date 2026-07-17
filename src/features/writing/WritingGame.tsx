@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMachine } from '@xstate/react'
 import type { SnapshotFrom } from 'xstate'
-import { writingMachine, WRITING_MAX_HEARTS, type WritingEvent } from './machine'
+import { writingMachine, WRITING_MAX_HP, type WritingEvent } from './machine'
 import {
   DIFFICULTY_META,
   chineseChars,
@@ -158,9 +158,11 @@ function WritingBattle({ state, send }: { state: Snapshot; send: Send }) {
       enemySprite={pokemon.sprite}
       enemyHp={ctx.enemyHp}
       enemyMaxHp={ctx.enemyMaxHp}
+      enemyLevel={ctx.enemyMaxHp}
       heroSprite={BUDDY}
-      hearts={ctx.hearts}
-      maxHearts={WRITING_MAX_HEARTS}
+      heroName="你"
+      heroHp={ctx.hp}
+      heroMaxHp={WRITING_MAX_HP}
       streak={ctx.streak}
       phase={phase}
       pulse={fx.pulse}

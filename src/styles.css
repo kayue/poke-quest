@@ -272,103 +272,129 @@ img {
 }
 .battle-bg::after { content: ''; }
 
-/* Top HUD */
-.hud {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: linear-gradient(#000a, transparent);
-}
-.hearts { display: flex; gap: 3px; font-size: 22px; }
+.hearts { display: flex; gap: 3px; font-size: 18px; }
 .heart { filter: drop-shadow(0 2px 0 rgba(0,0,0,0.4)); transition: transform 0.2s; }
 .heart.lost { filter: grayscale(1) brightness(0.5); }
 .heart.pop { animation: heart-pop 0.4s ease; }
-
-.hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .progress-label { font-size: 13px; color: var(--ink); font-weight: 700; }
-.progress-bar {
-  width: 110px; height: 12px;
-  background: #0007;
-  border: 2px solid #000;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ffd23f, #ff9d2f);
-  transition: width 0.5s ease;
-}
-.home-btn {
+
+/* Top controls */
+.battle-home {
   position: absolute;
-  top: 10px; left: 50%;
+  top: 8px; right: 8px;
+  z-index: 6;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  border: 3px solid #1c1830;
+  background: rgba(20, 16, 30, 0.6);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.battle-home:active { transform: translateY(3px); }
+.battle-top {
+  position: absolute;
+  top: 12px; left: 50%;
   transform: translateX(-50%);
-  z-index: 4;
+  z-index: 5;
+  display: flex; gap: 8px; align-items: center;
+}
+.progress-pill {
+  background: rgba(20, 16, 30, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 5px 12px;
+  font-weight: 800; font-size: 14px; color: #fff;
 }
 
-/* Enemy stage area */
+/* Arena — the classic battle field (top portion) */
 .arena {
   position: relative;
   z-index: 2;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 6px;
+  min-height: 200px;
 }
-.enemy-name {
-  font-family: var(--title-font);
-  font-size: 16px;
-  color: var(--gold);
-  text-shadow: 0 3px 0 #000, 0 0 6px #000;
-  margin-bottom: 8px;
+
+/* HP / status boxes */
+.hpbox {
+  position: absolute;
+  z-index: 4;
+  background: linear-gradient(#fff6e2, #f0e2c0);
+  border: 3px solid #6a5836;
+  border-radius: 12px;
+  padding: 6px 10px;
+  min-width: 138px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
 }
-.enemy-hp {
-  width: 150px;
-  height: 14px;
-  background: #0008;
-  border: 2px solid #000;
-  border-radius: 8px;
+.enemy-hpbox { top: 14px; left: 10px; }
+.player-hpbox { bottom: 8px; right: 10px; }
+.hpbox-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.mon-name { font-weight: 800; font-size: 16px; color: #2a2540; letter-spacing: 1px; }
+.mon-lv { font-size: 12px; font-weight: 800; color: #6a5836; }
+.hp-line { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+.hp-tag { font-size: 10px; font-weight: 800; font-style: italic; color: #b9932a; }
+.hp-track {
+  flex: 1; height: 8px; min-width: 96px;
+  background: #3a4a5a;
+  border: 1px solid #26303a;
+  border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 4px;
 }
-.enemy-hp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ff5d5d, #ff8a3d);
-  transition: width 0.4s ease;
+.hp-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease, background 0.4s; }
+
+/* Pokémon standing on their bases */
+.mon-spot { position: absolute; display: flex; align-items: flex-end; justify-content: center; }
+.enemy-spot { top: 60px; right: 30px; }
+.player-spot { bottom: 4px; left: 30px; }
+.mon-base {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 150px; height: auto;
+  z-index: 0;
 }
+.player-base-img { width: 192px; }
 
 .enemy-wrap {
   position: relative;
-  margin-top: 10px;
-  width: 150px;
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 118px; height: 118px;
+  display: flex; align-items: flex-end; justify-content: center;
+  margin-bottom: 6px; /* lift onto the base */
+  z-index: 1;
 }
 .enemy-sprite {
-  width: 130px;
-  height: 130px;
+  width: 106px; height: 106px;
   object-fit: contain;
   transform: scaleX(-1); /* face the player */
-  filter: drop-shadow(0 8px 6px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 4px 3px rgba(0,0,0,0.35));
   animation: float 2.6s ease-in-out infinite;
+  object-position: center bottom;
 }
 .enemy-wrap.appearing .enemy-sprite { animation: enemy-appear 0.7s ease both; }
 .enemy-wrap.faint .enemy-sprite { animation: enemy-faint 1s ease forwards; }
 /* Paired a/b classes let the shake restart even on rapid consecutive hits. */
 .enemy-wrap.hit-a .enemy-sprite,
 .enemy-wrap.hit-b .enemy-sprite { animation: enemy-hit 0.45s ease; }
-.enemy-shadow {
+
+.buddy-sprite {
+  position: relative;
+  width: 88px; height: 88px;
+  object-fit: contain;
+  object-position: center bottom;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 4px 3px rgba(0,0,0,0.45));
+  animation: bob 1.8s ease-in-out infinite;
+  z-index: 1;
+}
+.player-spot.atk-a .buddy-sprite,
+.player-spot.atk-b .buddy-sprite { animation: hero-lunge 0.5s ease; }
+.player-spot.hurt-a .buddy-sprite,
+.player-spot.hurt-b .buddy-sprite { animation: hero-hurt 0.5s ease; }
+.player-spot .streak-badge {
   position: absolute;
-  bottom: 6px;
-  width: 90px; height: 16px;
-  background: radial-gradient(ellipse, rgba(0,0,0,0.45), transparent 70%);
-  border-radius: 50%;
+  top: -4px; left: 50%;
+  transform: translateX(-50%);
 }
 
 /* attack effect overlay */

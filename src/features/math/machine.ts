@@ -4,7 +4,8 @@ import { setup, assign } from 'xstate'
 import {
   ENEMIES,
   STAGES,
-  PLAYER_MAX_HEARTS,
+  PLAYER_MAX_HP,
+  PLAYER_HURT,
   type Difficulty,
   type EnemyDef,
   type Hero,
@@ -28,7 +29,7 @@ export interface GameContext {
   enemyPos: number
   enemy: EnemyRuntime | null
   problem: Problem | null
-  hearts: number
+  hp: number
   score: number
   streak: number
   bestStreak: number
@@ -89,7 +90,7 @@ const initialContext: GameContext = {
   enemyPos: 0,
   enemy: null,
   problem: null,
-  hearts: PLAYER_MAX_HEARTS,
+  hp: PLAYER_MAX_HP,
   score: 0,
   streak: 0,
   bestStreak: 0,
@@ -114,7 +115,7 @@ export const gameMachine = setup({
     isCorrect: ({ context, event }) =>
       event.type === 'ANSWER' && !!context.problem && event.value === context.problem.answer,
     enemyDown: ({ context }) => !!context.enemy && context.enemy.hp <= 0,
-    playerDead: ({ context }) => !context.practice && context.hearts <= 0,
+    playerDead: ({ context }) => !context.practice && context.hp <= 0,
     wasLastEnemy: ({ context }) =>
       !context.practice && context.enemyPos + 1 >= context.enemyOrder.length,
   },
@@ -170,7 +171,7 @@ export const gameMachine = setup({
               stageIndex,
               enemyOrder: STAGES[stageIndex].enemies,
               enemyPos: 0,
-              hearts: PLAYER_MAX_HEARTS,
+              hp: PLAYER_MAX_HP,
               score: 0,
               streak: 0,
               bestStreak: 0,
@@ -188,7 +189,7 @@ export const gameMachine = setup({
             practice: true,
             enemyOrder: [],
             enemyPos: 0,
-            hearts: PLAYER_MAX_HEARTS,
+            hp: PLAYER_MAX_HP,
             score: 0,
             streak: 0,
             bestStreak: 0,
@@ -258,8 +259,8 @@ export const gameMachine = setup({
           entry: assign({
             lastAnswerCorrect: false,
             lastSelected: ({ event }) => (event.type === 'ANSWER' ? event.value : null),
-            hearts: ({ context }) =>
-              context.practice ? context.hearts : context.hearts - 1,
+            hp: ({ context }) =>
+              context.practice ? context.hp : context.hp - PLAYER_HURT,
             streak: 0,
           }),
           after: {

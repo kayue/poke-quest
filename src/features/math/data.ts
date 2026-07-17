@@ -138,4 +138,5 @@ export const DIFFICULTIES: { id: Difficulty; label: string; emoji: string }[] = 
   { id: 'hard', label: 'Hard', emoji: '🔥' },
 ]
 
-export const PLAYER_MAX_HEARTS = 5
+export const PLAYER_MAX_HP = 100
+export const PLAYER_HURT = 20 // HP lost per wrong answer (5 wrong answers = faint)
