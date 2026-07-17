@@ -36,12 +36,6 @@ the answer.
 - Pure CSS keyframe animations (idle bob, enemy hit/faint, attack sprite-sheet
   effects, floating text, confetti).
 
-## Assets
-
-- **Pokémon sprites**: [`pokesprite`](https://github.com/msikma/pokesprite) box
-  icons (`public/assets/pokemon/`).
-- **Backgrounds & attack effects**: from the bundled `references/assets` pack.
-
 ## Run it
 
 ```bash
@@ -62,3 +56,39 @@ src/
   App.tsx          # router + title / selection / result screens
   styles.css       # all styling & animations
 ```
+
+## Credits & references
+
+This is a fan/educational project built on top of the following resources.
+All credit for the artwork and the original game concept goes to their authors.
+
+### Game concept
+
+- **S.U.M.** — the "fight monsters by solving maths" battle mechanic that this
+  game is based on. Heroes and Monsters here are reskinned as Pokémon.
+
+### Pokémon sprites
+
+- **Pokésprite** — box/inventory Pokémon icons used for the heroes and enemies
+  (`public/assets/pokemon/`).
+  - Gallery: https://msikma.github.io/pokesprite/
+  - Repo: https://github.com/msikma/pokesprite (icons licensed MIT; Pokémon and
+    their names are © Nintendo / Game Freak / The Pokémon Company)
+
+### Battle art (backgrounds, creature/attack sprites, tilesets, UI)
+
+- **Monster Pack — Wild Sprites 01 (`mpwsp01`)** by **scarloxy** — the pixel-art
+  backgrounds, attack effects, tilesets and UI in `references/assets`.
+  - https://scarloxy.itch.io/mpwsp01
+
+### Tech
+
+- [Vite](https://vite.dev/), [React](https://react.dev/),
+  [TypeScript](https://www.typescriptlang.org/) and
+  [XState](https://stately.ai/docs/xstate) v5.
+- Fonts: [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) and
+  [Baloo 2](https://fonts.google.com/specimen/Baloo+2) via Google Fonts.
+
+> **Note:** Pokémon is a trademark of Nintendo / Game Freak / The Pokémon
+> Company. This project is a non-commercial educational fan project and is not
+> affiliated with or endorsed by them.
