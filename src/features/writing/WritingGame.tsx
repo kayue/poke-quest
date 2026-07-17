@@ -1,62 +1,53 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMachine } from '@xstate/react'
-import { writingMachine, type WritingEvent } from './machine'
+import type { SnapshotFrom } from 'xstate'
+import { writingMachine, WRITING_MAX_HEARTS, type WritingEvent } from './machine'
 import {
   DIFFICULTY_META,
   chineseChars,
   pokemonByDifficulty,
   type WriteDifficulty,
-  type WritingPokemon,
 } from './data'
 import { charStrokes } from './strokeData'
 import { HanziQuiz, type HanziQuizHandle } from './HanziQuiz'
-import { pokemonSrc } from '../../shared/assets'
+import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
+import { ResultScreen } from '../../shared/ResultScreen'
 
+type Snapshot = SnapshotFrom<typeof writingMachine>
 type Send = (event: WritingEvent) => void
 const TIERS: WriteDifficulty[] = ['easy', 'medium', 'hard']
+const BUDDY = 'pikachu.png'
+const WRITE_BG = 'background2.png'
 
-/** The Chinese Writing activity. Runs its own state machine. */
-export function WritingGame({ onExit }: { onExit: () => void }) {
-  const [state, send] = useMachine(writingMachine)
-  const { difficulty, pos, charIndex, nameMistakes, learned } = state.context
-
-  if (state.matches('difficultySelect')) {
-    return <DifficultySelect learned={learned} send={send} onExit={onExit} />
-  }
-
-  const list = pokemonByDifficulty(difficulty)
-  const pokemon = list[pos]
-
-  if (state.matches('practicing')) {
-    return (
-      <Practice
-        pokemon={pokemon}
-        charIndex={charIndex}
-        posLabel={`${pos + 1}/${list.length}`}
-        send={send}
-      />
-    )
-  }
-  // celebrating
-  return (
-    <Celebrate
-      pokemon={pokemon}
-      nameMistakes={nameMistakes}
-      hasNext={pos + 1 < list.length}
-      send={send}
-    />
-  )
+function battleSubstate(state: Snapshot): string {
+  const v = state.value as { battle?: string }
+  return typeof v === 'object' && v.battle ? v.battle : ''
 }
 
-function DifficultySelect({
-  learned,
-  send,
-  onExit,
-}: {
-  learned: string[]
-  send: Send
-  onExit: () => void
-}) {
+function pickEffect(streak: number): string {
+  const max = Math.min(7, 3 + Math.floor(streak / 2))
+  return `attack${1 + Math.floor(Math.random() * max)}.png`
+}
+
+/** The Chinese Writing activity — a stroke-order battle. */
+export function WritingGame({ onExit }: { onExit: () => void }) {
+  const [state, send] = useMachine(writingMachine)
+
+  useEffect(() => {
+    if (state.status === 'done' || state.matches('exit')) onExit()
+  }, [state, onExit])
+  if (state.matches('exit')) return null
+
+  if (state.matches('difficultySelect')) {
+    return <DifficultySelect send={send} onExit={onExit} />
+  }
+  if (state.matches('victory') || state.matches('defeat')) {
+    return <WritingResult state={state} send={send} />
+  }
+  return <WritingBattle state={state} send={send} />
+}
+
+function DifficultySelect({ send, onExit }: { send: Send; onExit: () => void }) {
   return (
     <div className="screen select-screen">
       <div className="select-header">
@@ -66,12 +57,11 @@ function DifficultySelect({
         <span className="select-title">揀難度 · Pick a level</span>
       </div>
       <p className="write-intro">
-        Trace Pokémon names in Traditional Chinese, stroke by stroke! ✏️
+        Defeat wild Pokémon by writing their names — every stroke is a hit! ✏️
       </p>
       {TIERS.map((tier) => {
         const meta = DIFFICULTY_META[tier]
         const list = pokemonByDifficulty(tier)
-        const doneCount = list.filter((p) => learned.includes(p.id)).length
         return (
           <button
             key={tier}
@@ -85,9 +75,7 @@ function DifficultySelect({
               </div>
               <div className="diff-meta">{list.length} Pokémon</div>
             </div>
-            <span className="diff-progress">
-              {doneCount}/{list.length} ⭐
-            </span>
+            <span className="diff-progress">›</span>
           </button>
         )
       })}
@@ -95,162 +83,172 @@ function DifficultySelect({
   )
 }
 
-function Practice({
-  pokemon,
-  charIndex,
-  posLabel,
-  send,
-}: {
-  pokemon: WritingPokemon
-  charIndex: number
-  posLabel: string
-  send: Send
-}) {
-  const chars = chineseChars(pokemon.nameZh)
-  const char = chars[charIndex]
+interface Fx {
+  pulse: number
+  kind: 'hit' | 'hurt' | null
+  effect: string
+  float: string
+  floatKind: 'dmg' | 'miss'
+  banner: BattleBanner | null
+}
+
+function WritingBattle({ state, send }: { state: Snapshot; send: Send }) {
+  const ctx = state.context
+  const sub = battleSubstate(state)
+  const list = pokemonByDifficulty(ctx.difficulty)
+  const pokemon = list[ctx.pos]
+  const chars = chineseChars(pokemon?.nameZh ?? '')
+  const char = chars[ctx.charIndex]
+
   const quizRef = useRef<HanziQuizHandle>(null)
-
   const [caption, setCaption] = useState('跟著筆順寫一寫')
-  const [shakeKey, setShakeKey] = useState(0)
-  const [shaking, setShaking] = useState(false)
-  const [done, setDone] = useState(false)
-  const advanceTimer = useRef<number | undefined>(undefined)
+  const [fx, setFx] = useState<Fx>({
+    pulse: 0,
+    kind: null,
+    effect: '',
+    float: '',
+    floatKind: 'dmg',
+    banner: null,
+  })
 
+  // Reset the caption when the character changes.
   useEffect(() => {
     setCaption('跟著筆順寫一寫')
-    setShaking(false)
-    setDone(false)
-    return () => window.clearTimeout(advanceTimer.current)
-  }, [charIndex, pokemon.id])
+  }, [ctx.charIndex, ctx.pos])
 
-  const handleComplete = (mistakes: number) => {
-    setDone(true)
-    setCaption('好棒！')
-    advanceTimer.current = window.setTimeout(() => {
-      send({ type: 'NEXT_CHAR', mistakes })
-    }, 1000)
+  const phase: BattlePhase =
+    sub === 'intro' ? 'intro' : sub === 'enemyFaint' ? 'faint' : 'active'
+
+  const handleCorrectStroke = () => {
+    setCaption('很好！')
+    setFx((p) => ({
+      pulse: p.pulse + 1,
+      kind: 'hit',
+      effect: pickEffect(ctx.streak),
+      float: '-1',
+      floatKind: 'dmg',
+      banner: null,
+    }))
+    send({ type: 'STROKE_OK' })
   }
 
   const handleMistake = () => {
     setCaption('哎呀，再試一次！')
-    setShakeKey((k) => k + 1)
-    setShaking(true)
-    window.setTimeout(() => setShaking(false), 450)
+    setFx((p) => ({
+      pulse: p.pulse + 1,
+      kind: 'hurt',
+      effect: '',
+      float: 'oops',
+      floatKind: 'miss',
+      banner: { text: '再試！', kind: 'bad' },
+    }))
+    send({ type: 'STROKE_BAD' })
   }
 
-  const handleCorrectStroke = () => {
-    if (!done) setCaption('很好，繼續！')
+  const handleComplete = () => {
+    send({ type: 'CHAR_DONE' })
   }
+
+  if (!pokemon) return null
 
   return (
-    <div className="screen write-screen">
-      <div className="write-topbar">
-        <button className="btn btn-ghost" onClick={() => send({ type: 'BACK' })}>
-          ‹ 難度
-        </button>
+    <BattleScene
+      background={WRITE_BG}
+      enemyName={pokemon.nameZh}
+      enemySprite={pokemon.sprite}
+      enemyHp={ctx.enemyHp}
+      enemyMaxHp={ctx.enemyMaxHp}
+      heroSprite={BUDDY}
+      hearts={ctx.hearts}
+      maxHearts={WRITING_MAX_HEARTS}
+      streak={ctx.streak}
+      phase={phase}
+      pulse={fx.pulse}
+      pulseKind={fx.kind}
+      effect={fx.effect}
+      floatText={fx.float}
+      floatKind={fx.floatKind}
+      banner={fx.banner}
+      progressCurrent={ctx.defeated}
+      progressTotal={list.length}
+      onHome={() => send({ type: 'HOME' })}
+    >
+      <div className="write-fight">
         <div className="write-progress">
           {chars.map((c, i) => (
             <span
               key={i}
               className={
                 'char-chip ' +
-                (i < charIndex ? 'chip-done' : i === charIndex ? 'chip-active' : 'chip-todo')
+                (i < ctx.charIndex ? 'chip-done' : i === ctx.charIndex ? 'chip-active' : 'chip-todo')
               }
             >
               {c}
             </span>
           ))}
         </div>
-        <span className="tier-pos">{posLabel}</span>
-      </div>
 
-      <div className="write-poke">
-        <img className="write-sprite" src={pokemonSrc(pokemon.sprite)} alt={pokemon.english} />
-        <div className="write-names">
-          <div className="write-zh">{pokemon.nameZh}</div>
-          <div className="write-en">{pokemon.english}</div>
-        </div>
+        {sub === 'writing' && char ? (
+          <>
+            <div className="caption">
+              {caption} <span className="stroke-count">「{char}」{charStrokes(char)} 劃</span>
+            </div>
+            <div className="hanzi-stage">
+              <HanziQuiz
+                key={`${pokemon.id}-${ctx.charIndex}`}
+                ref={quizRef}
+                char={char}
+                size={260}
+                onComplete={handleComplete}
+                onMistake={handleMistake}
+                onCorrectStroke={handleCorrectStroke}
+                onLoadError={() => setCaption('這個字載入失敗')}
+              />
+            </div>
+            <div className="write-controls">
+              <button className="btn btn-ghost" onClick={() => quizRef.current?.animate()}>
+                👀 看示範
+              </button>
+              <button className="btn btn-ghost" onClick={() => quizRef.current?.reset()}>
+                ↻ 重寫
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="write-standby">
+            <div className="hanzi-box" style={{ width: 260, height: 260 }}>
+              <div className="hanzi-grid" aria-hidden />
+              <div className="hanzi-status">
+                {sub === 'faint' || sub === 'enemyFaint' ? '打倒了！ 🎉' : '準備… ✏️'}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      <div className={`caption ${done ? 'good' : ''}`}>
-        {caption} <span className="stroke-count">「{char}」{charStrokes(char)} 劃</span>
-      </div>
-
-      <div className={`hanzi-stage ${shaking ? 'shake' : ''}`} key={shakeKey}>
-        <HanziQuiz
-          key={`${pokemon.id}-${charIndex}`}
-          ref={quizRef}
-          char={char}
-          size={300}
-          onComplete={handleComplete}
-          onMistake={handleMistake}
-          onCorrectStroke={handleCorrectStroke}
-          onLoadError={() => setCaption('這個字載入失敗，可以跳過')}
-        />
-      </div>
-
-      <div className="write-controls">
-        <button className="btn btn-ghost" onClick={() => quizRef.current?.animate()}>
-          👀 看示範
-        </button>
-        <button className="btn btn-ghost" onClick={() => quizRef.current?.reset()}>
-          ↻ 重寫
-        </button>
-        <button
-          className="btn btn-ghost"
-          onClick={() => send({ type: 'NEXT_CHAR', mistakes: 0 })}
-        >
-          跳過 ›
-        </button>
-      </div>
-    </div>
+    </BattleScene>
   )
 }
 
-function Celebrate({
-  pokemon,
-  nameMistakes,
-  hasNext,
-  send,
-}: {
-  pokemon: WritingPokemon
-  nameMistakes: number
-  hasNext: boolean
-  send: Send
-}) {
+function WritingResult({ state, send }: { state: Snapshot; send: Send }) {
+  const ctx = state.context
+  const win = state.matches('victory')
   return (
-    <div className="screen result-screen">
-      {Array.from({ length: 14 }).map((_, i) => (
-        <span
-          key={i}
-          className="confetti"
-          style={{
-            left: `${(i * 7 + 4) % 100}%`,
-            background: ['#ffd23f', '#ff5d5d', '#58d66a', '#5f9de0', '#b47be0'][i % 5],
-            animationDuration: `${2 + (i % 4) * 0.6}s`,
-            animationDelay: `${(i % 5) * 0.2}s`,
-          }}
-        />
-      ))}
-      <h1 className="result-title win">學會了！</h1>
-      <img className="result-hero win" src={pokemonSrc(pokemon.sprite)} alt={pokemon.english} />
-      <div className="celebrate-name">{pokemon.nameZh}</div>
-      <div className="write-en big">{pokemon.english}</div>
-      <p className="tagline">
-        {nameMistakes === 0
-          ? '完美！一個錯都沒有 ⭐ Perfect stroke order!'
-          : 'Great writing! Keep practising ✏️'}
-      </p>
-      <div className="result-actions">
-        <button className="btn" onClick={() => send({ type: 'CONTINUE' })}>
-          🏠 難度
-        </button>
-        {hasNext && (
-          <button className="btn btn-primary" onClick={() => send({ type: 'NEXT_POKEMON' })}>
-            下一隻 ›
-          </button>
-        )}
-      </div>
-    </div>
+    <ResultScreen
+      kind={win ? 'win' : 'lose'}
+      title={win ? '全部打倒了！ 🎉' : 'GAME OVER'}
+      message={
+        win
+          ? '你學會了好多漢字！ Amazing writing!'
+          : '再接再厲！ Every stroke makes you stronger.'
+      }
+      heroSprite={BUDDY}
+      stats={[
+        { label: '打倒 Beaten', value: ctx.defeated },
+        { label: 'Best 🔥', value: ctx.bestStreak },
+      ]}
+      onHome={() => send({ type: 'HOME' })}
+      onRetry={() => send({ type: 'RETRY' })}
+      retryLabel="↻ 再玩"
+    />
   )
 }

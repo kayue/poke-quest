@@ -359,8 +359,10 @@ img {
   animation: float 2.6s ease-in-out infinite;
 }
 .enemy-wrap.appearing .enemy-sprite { animation: enemy-appear 0.7s ease both; }
-.enemy-wrap.hit .enemy-sprite { animation: enemy-hit 0.45s ease; }
 .enemy-wrap.faint .enemy-sprite { animation: enemy-faint 1s ease forwards; }
+/* Paired a/b classes let the shake restart even on rapid consecutive hits. */
+.enemy-wrap.hit-a .enemy-sprite,
+.enemy-wrap.hit-b .enemy-sprite { animation: enemy-hit 0.45s ease; }
 .enemy-shadow {
   position: absolute;
   bottom: 6px;
@@ -503,6 +505,11 @@ img {
   gap: 4px;
   z-index: 3;
 }
+/* When the buddy lives inside the arena (shared BattleScene). */
+.hero-corner.in-arena {
+  bottom: 6px;
+  left: 8px;
+}
 .hero-battle-sprite {
   width: 72px; height: 72px;
   object-fit: contain;
@@ -511,6 +518,10 @@ img {
 }
 .hero-corner.attacking .hero-battle-sprite { animation: hero-lunge 0.5s ease; }
 .hero-corner.hurt .hero-battle-sprite { animation: hero-hurt 0.5s ease; }
+.hero-corner.atk-a .hero-battle-sprite,
+.hero-corner.atk-b .hero-battle-sprite { animation: hero-lunge 0.5s ease; }
+.hero-corner.hurt-a .hero-battle-sprite,
+.hero-corner.hurt-b .hero-battle-sprite { animation: hero-hurt 0.5s ease; }
 .streak-badge {
   background: #ffd23f;
   color: #5a3200;
@@ -866,3 +877,27 @@ img {
   letter-spacing: 4px;
   color: #fff;
 }
+
+/* ============================================================
+   Shared battle panel (bottom interaction area) + writing battle
+   ============================================================ */
+.battle-panel {
+  position: relative;
+  z-index: 2;
+}
+
+.write-fight {
+  background: linear-gradient(#242a4d, #1a1f3d);
+  border-top: 4px solid #ffd23f88;
+  padding: 8px 14px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.write-fight .write-progress { margin-bottom: 2px; }
+.write-fight .char-chip { min-width: 30px; height: 34px; font-size: 19px; }
+.write-fight .caption { font-size: 16px; min-height: 20px; }
+.write-fight .hanzi-box { box-shadow: 0 5px 0 rgba(0,0,0,0.35); }
+.write-fight .write-controls { gap: 8px; }
+.write-fight .write-controls .btn { font-size: 15px; padding: 8px 14px; }

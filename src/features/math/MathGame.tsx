@@ -4,6 +4,7 @@ import type { SnapshotFrom } from 'xstate'
 import { gameMachine, type GameEvent } from './machine'
 import { DIFFICULTIES, ENEMIES, HEROES, MODES, STAGES } from './data'
 import { pokemonSrc } from '../../shared/assets'
+import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
 
 type Send = (event: GameEvent) => void
@@ -151,59 +152,23 @@ function Result({
   send: Send
 }) {
   const ctx = state.context
-  const hero = ctx.hero
   return (
-    <div className="screen result-screen">
-      {kind === 'win' &&
-        Array.from({ length: 14 }).map((_, i) => (
-          <span
-            key={i}
-            className="confetti"
-            style={{
-              left: `${(i * 7 + 4) % 100}%`,
-              background: ['#ffd23f', '#ff5d5d', '#58d66a', '#5f9de0', '#b47be0'][i % 5],
-              animationDuration: `${2 + (i % 4) * 0.6}s`,
-              animationDelay: `${(i % 5) * 0.2}s`,
-            }}
-          />
-        ))}
-      <h1 className={`result-title ${kind}`}>
-        {kind === 'win' ? 'YOU WIN! 🎉' : 'GAME OVER'}
-      </h1>
-      {hero && (
-        <img
-          className={`result-hero ${kind === 'win' ? 'win' : ''}`}
-          src={pokemonSrc(hero.sprite)}
-          alt={hero.name}
-        />
-      )}
-      <div className="stat-row">
-        <div className="stat">
-          <b>{ctx.score}</b>
-          <span>Score</span>
-        </div>
-        <div className="stat">
-          <b>{ctx.defeated}</b>
-          <span>Beaten</span>
-        </div>
-        <div className="stat">
-          <b>{ctx.bestStreak}</b>
-          <span>Best 🔥</span>
-        </div>
-      </div>
-      <p className="tagline">
-        {kind === 'win'
+    <ResultScreen
+      kind={kind}
+      title={kind === 'win' ? 'YOU WIN! 🎉' : 'GAME OVER'}
+      message={
+        kind === 'win'
           ? 'Amazing maths skills! Ready for the next challenge?'
-          : 'Good try! Every hero gets stronger with practice.'}
-      </p>
-      <div className="result-actions">
-        <button className="btn" onClick={() => send({ type: 'HOME' })}>
-          🏠 Home
-        </button>
-        <button className="btn btn-primary" onClick={() => send({ type: 'RETRY' })}>
-          ↻ Play Again
-        </button>
-      </div>
-    </div>
+          : 'Good try! Every hero gets stronger with practice.'
+      }
+      heroSprite={ctx.hero?.sprite ?? 'pikachu.png'}
+      stats={[
+        { label: 'Score', value: ctx.score },
+        { label: 'Beaten', value: ctx.defeated },
+        { label: 'Best 🔥', value: ctx.bestStreak },
+      ]}
+      onHome={() => send({ type: 'HOME' })}
+      onRetry={() => send({ type: 'RETRY' })}
+    />
   )
 }
