@@ -311,12 +311,47 @@ img {
   z-index: 5;
   display: flex; gap: 8px; align-items: center;
 }
-.progress-pill {
-  background: rgba(20, 16, 30, 0.6);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 5px 12px;
-  font-weight: 800; font-size: 14px; color: #fff;
+/* Progress roster — a row of Poké Balls sitting on top of the enemy HP box,
+   left-aligned with it. Faded balls = foes already beaten. */
+.enemy-roster {
+  position: absolute;
+  top: 12px; left: 12px;
+  z-index: 4;
+  display: flex; gap: 5px;
+}
+.foe-ball {
+  position: relative;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid #1c1830;
+  background:
+    linear-gradient(#e34b4b 0 0) top / 100% 50% no-repeat,
+    #f6f6f6;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+/* Middle band across the ball */
+.foe-ball::before {
+  content: '';
+  position: absolute;
+  left: -2px; right: -2px; top: 50%;
+  height: 2px;
+  background: #1c1830;
+  transform: translateY(-50%);
+}
+/* Centre button */
+.foe-ball::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #1c1830;
+}
+/* Beaten foes: same red & white ball, just faded. */
+.foe-ball.dim {
+  opacity: 0.4;
 }
 
 /* Arena — the classic battle field (top portion) */
@@ -338,7 +373,7 @@ img {
   min-width: 138px;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
 }
-.enemy-hpbox { top: 14px; left: 10px; }
+.enemy-hpbox { top: 40px; left: 10px; }
 .player-hpbox { bottom: 8px; right: 10px; }
 .hpbox-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .mon-name { font-weight: 800; font-size: 16px; color: #2a2540; letter-spacing: 1px; }

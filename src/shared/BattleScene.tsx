@@ -97,15 +97,22 @@ export function BattleScene(props: BattleSceneProps) {
       <button className="battle-home" onClick={props.onHome} aria-label="menu">
         {props.homeLabel ?? '☰'}
       </button>
-      <div className="battle-top">
-        {props.hudRight ?? (
-          <span className="progress-pill">
-            🏆 {props.progressCurrent ?? 0}/{props.progressTotal ?? 0}
-          </span>
-        )}
-      </div>
+      {props.hudRight && <div className="battle-top">{props.hudRight}</div>}
 
       <div className="arena">
+        {/* Progress roster: one Poké Ball per stage foe, lit as each is beaten.
+            Sits left-aligned just above the enemy HP box. */}
+        {(props.progressTotal ?? 0) > 0 && (
+          <div className="enemy-roster">
+            {Array.from({ length: props.progressTotal ?? 0 }).map((_, i) => (
+              <span
+                key={i}
+                className={`foe-ball ${i < (props.progressCurrent ?? 0) ? 'dim' : ''}`}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Enemy HP box (top-left) */}
         <HpBox className="enemy-hpbox" name={props.enemyName} level={props.enemyLevel} hpPct={hpPct} />
 
