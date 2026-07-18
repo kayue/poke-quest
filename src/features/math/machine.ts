@@ -91,7 +91,9 @@ const initialContext: GameContext = {
 // Animation / pacing durations (ms)
 const T_INTRO = 800
 const T_CORRECT = 950
-const T_WRONG = 1050
+// Linger after a wrong answer so the child can study the highlighted
+// correct tile before the next problem appears.
+const T_WRONG = 3000
 const T_FAINT = 1100
 
 export const gameMachine = setup({
