@@ -12,11 +12,11 @@ import { charStrokes } from './strokeData'
 import { HanziQuiz, type HanziQuizHandle } from './HanziQuiz'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 import { ResultScreen } from '../../shared/ResultScreen'
+import type { Hero } from '../../shared/heroes'
 
 type Snapshot = SnapshotFrom<typeof writingMachine>
 type Send = (event: WritingEvent) => void
 const TIERS: WriteDifficulty[] = ['easy', 'medium', 'hard']
-const BUDDY = 'pikachu.png'
 const WRITE_BG = 'background2.png'
 
 function battleSubstate(state: Snapshot): string {
@@ -30,7 +30,7 @@ function pickEffect(streak: number): string {
 }
 
 /** The Chinese Writing activity — a stroke-order battle. */
-export function WritingGame({ onExit }: { onExit: () => void }) {
+export function WritingGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
   const [state, send] = useMachine(writingMachine)
 
   useEffect(() => {
@@ -42,9 +42,9 @@ export function WritingGame({ onExit }: { onExit: () => void }) {
     return <DifficultySelect send={send} onExit={onExit} />
   }
   if (state.matches('victory') || state.matches('defeat')) {
-    return <WritingResult state={state} send={send} />
+    return <WritingResult state={state} send={send} hero={hero} />
   }
-  return <WritingBattle state={state} send={send} />
+  return <WritingBattle state={state} send={send} hero={hero} />
 }
 
 function DifficultySelect({ send, onExit }: { send: Send; onExit: () => void }) {
@@ -92,7 +92,7 @@ interface Fx {
   banner: BattleBanner | null
 }
 
-function WritingBattle({ state, send }: { state: Snapshot; send: Send }) {
+function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; hero: Hero }) {
   const ctx = state.context
   const sub = battleSubstate(state)
   const list = pokemonByDifficulty(ctx.difficulty)
@@ -159,8 +159,8 @@ function WritingBattle({ state, send }: { state: Snapshot; send: Send }) {
       enemyHp={ctx.enemyHp}
       enemyMaxHp={ctx.enemyMaxHp}
       enemyLevel={ctx.enemyMaxHp}
-      heroSprite={BUDDY}
-      heroName="你"
+      heroSprite={hero.sprite}
+      heroName={hero.name}
       heroHp={ctx.hp}
       heroMaxHp={WRITING_MAX_HP}
       streak={ctx.streak}
@@ -231,7 +231,7 @@ function WritingBattle({ state, send }: { state: Snapshot; send: Send }) {
   )
 }
 
-function WritingResult({ state, send }: { state: Snapshot; send: Send }) {
+function WritingResult({ state, send, hero }: { state: Snapshot; send: Send; hero: Hero }) {
   const ctx = state.context
   const win = state.matches('victory')
   return (
@@ -243,7 +243,7 @@ function WritingResult({ state, send }: { state: Snapshot; send: Send }) {
           ? '你學會了好多漢字！ Amazing writing!'
           : '再接再厲！ Every stroke makes you stronger.'
       }
-      heroSprite={BUDDY}
+      heroSprite={hero.sprite}
       stats={[
         { label: '打倒 Beaten', value: ctx.defeated },
         { label: 'Best 🔥', value: ctx.bestStreak },

@@ -2,17 +2,17 @@ import { useEffect } from 'react'
 import { useMachine } from '@xstate/react'
 import type { SnapshotFrom } from 'xstate'
 import { gameMachine, type GameEvent } from './machine'
-import { DIFFICULTIES, ENEMIES, HEROES, MODES, STAGES } from './data'
-import { pokemonSrc } from '../../shared/assets'
+import { DIFFICULTIES, ENEMIES, MODES, STAGES } from './data'
+import type { Hero } from '../../shared/heroes'
 import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
 
 type Send = (event: GameEvent) => void
 
-/** The Maths Quest activity. Runs its own state machine and calls
- *  `onExit` when the player leaves back to the app home. */
-export function MathGame({ onExit }: { onExit: () => void }) {
-  const [state, send] = useMachine(gameMachine)
+/** The Maths Quest activity. Runs its own state machine (with the shared
+ *  buddy passed in) and calls `onExit` when the player leaves to the home. */
+export function MathGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
+  const [state, send] = useMachine(gameMachine, { input: { hero } })
 
   // The machine's `exit` state is final; when reached, hand control back.
   useEffect(() => {
@@ -23,7 +23,6 @@ export function MathGame({ onExit }: { onExit: () => void }) {
 
   return (
     <>
-      {state.matches('heroSelect') && <HeroSelect send={send} onExit={onExit} />}
       {state.matches('modeSelect') && <ModeSelect send={send} />}
       {state.matches('difficultySelect') && <DifficultySelect send={send} />}
       {state.matches('journeySelect') && <JourneySelect send={send} />}
@@ -41,27 +40,6 @@ function SelectHeader({ title, onBack }: { title: string; onBack: () => void }) 
         ‹ Back
       </button>
       <span className="select-title">{title}</span>
-    </div>
-  )
-}
-
-function HeroSelect({ send, onExit }: { send: Send; onExit: () => void }) {
-  return (
-    <div className="screen select-screen">
-      <SelectHeader title="Pick your buddy!" onBack={onExit} />
-      <div className="card-grid">
-        {HEROES.map((h) => (
-          <button
-            key={h.id}
-            className="card"
-            onClick={() => send({ type: 'SELECT_HERO', hero: h })}
-          >
-            <img className="hero-sprite" src={pokemonSrc(h.sprite)} alt={h.name} />
-            <span className="card-name">{h.name}</span>
-            <span className="card-desc">{h.blurb}</span>
-          </button>
-        ))}
-      </div>
     </div>
   )
 }

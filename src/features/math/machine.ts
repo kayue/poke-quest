@@ -1,5 +1,6 @@
 // XState v5 machine for the Maths Quest activity:
-// hero select -> mode -> difficulty -> journey -> battle -> victory/defeat -> exit
+// mode -> difficulty -> journey -> battle -> victory/defeat -> exit
+// (The buddy hero is chosen on the home screen and passed in as input.)
 import { setup, assign } from 'xstate'
 import {
   ENEMIES,
@@ -8,9 +9,9 @@ import {
   PLAYER_HURT,
   type Difficulty,
   type EnemyDef,
-  type Hero,
   type Operation,
 } from './data'
+import type { Hero } from '../../shared/heroes'
 import { generateProblem, type Problem } from './problems'
 
 export interface EnemyRuntime {
@@ -40,7 +41,6 @@ export interface GameContext {
 }
 
 export type GameEvent =
-  | { type: 'SELECT_HERO'; hero: Hero }
   | { type: 'SELECT_MODE'; mode: Operation }
   | { type: 'SELECT_DIFFICULTY'; difficulty: Difficulty }
   | { type: 'START_ADVENTURE'; stageIndex: number }
@@ -110,6 +110,7 @@ export const gameMachine = setup({
   types: {
     context: {} as GameContext,
     events: {} as GameEvent,
+    input: {} as { hero: Hero },
   },
   guards: {
     isCorrect: ({ context, event }) =>
@@ -121,23 +122,13 @@ export const gameMachine = setup({
   },
 }).createMachine({
   id: 'game',
-  context: initialContext,
-  initial: 'heroSelect',
+  context: ({ input }) => ({ ...initialContext, hero: input.hero }),
+  initial: 'modeSelect',
   states: {
     // Reached when the player leaves the Maths Quest entirely. MathGame
     // watches for this and returns to the app home screen.
     exit: {
       type: 'final',
-    },
-
-    heroSelect: {
-      on: {
-        SELECT_HERO: {
-          target: 'modeSelect',
-          actions: assign({ hero: ({ event }) => event.hero }),
-        },
-        BACK: 'exit',
-      },
     },
 
     modeSelect: {
@@ -146,7 +137,7 @@ export const gameMachine = setup({
           target: 'difficultySelect',
           actions: assign({ mode: ({ event }) => event.mode }),
         },
-        BACK: 'heroSelect',
+        BACK: 'exit',
       },
     },
 
