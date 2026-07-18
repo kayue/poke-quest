@@ -51,11 +51,13 @@ All credit for the artwork and the original game concept goes to their authors.
 
 ### Pokémon sprites
 
-- **Pokésprite** — box/inventory Pokémon icons used for the heroes and enemies
-  (`public/assets/pokemon/`).
-  - Gallery: https://msikma.github.io/pokesprite/
-  - Repo: https://github.com/msikma/pokesprite (icons licensed MIT; Pokémon and
-    their names are © Nintendo / Game Freak / The Pokémon Company)
+- **Pokémon HeartGold/SoulSilver front sprites** — the battle sprites used for
+  heroes and enemies (`public/assets/pokemon/`), sourced as individual files
+  from the [PokeAPI sprites](https://github.com/PokeAPI/sprites) repository
+  (`versions/generation-iv/heartgold-soulsilver`). Pokémon, their sprites and
+  names are © Nintendo / Game Freak / The Pokémon Company.
+- **Battle platforms** (`public/assets/battle/`) are cropped from HGSS/FRLG
+  battle-base rips on [The Spriters Resource](https://www.spriters-resource.com/).
 
 ### Battle art (backgrounds, creature/attack sprites, tilesets, UI)
 

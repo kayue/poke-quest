@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { backgroundSrc, effectSrc, pokemonSrc } from './assets'
+import { backgroundSrc, effectSrc, pokemonSrc, pokemonBackSrc } from './assets'
 
 // Presentational "battle chrome" shared by every game mode, laid out like a
 // classic Pokémon battle: the foe stands on a platform in the upper-right with
@@ -136,7 +136,7 @@ export function BattleScene(props: BattleSceneProps) {
         {/* Buddy on its base (lower-left) */}
         <div className={`mon-spot player-spot ${buddyClass}`}>
           <img className="mon-base player-base-img" src={BASE_PLAYER} alt="" />
-          <img className="buddy-sprite" src={pokemonSrc(props.heroSprite)} alt="buddy" />
+          <img className="buddy-sprite" src={pokemonBackSrc(props.heroSprite)} alt="buddy" />
           {(props.streak ?? 0) >= 2 && <span className="streak-badge">🔥 {props.streak}</span>}
         </div>
 
