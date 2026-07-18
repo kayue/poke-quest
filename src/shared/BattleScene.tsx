@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { backgroundSrc, effectSrc, pokemonSrc, pokemonBackSrc } from './assets'
+import { assetSrc, backgroundSrc, effectSrc, pokemonSrc, pokemonBackSrc } from './assets'
 
 // Presentational "battle chrome" shared by every game mode, laid out like a
 // classic Pokémon battle: the foe stands on a platform in the upper-right with
@@ -43,8 +43,8 @@ export interface BattleSceneProps {
   children: ReactNode
 }
 
-const BASE_ENEMY = '/assets/battle/enemy_base.png'
-const BASE_PLAYER = '/assets/battle/player_base.png'
+const BASE_ENEMY = assetSrc('battle/enemy_base.png')
+const BASE_PLAYER = assetSrc('battle/player_base.png')
 
 function hpColor(pct: number): string {
   return pct > 50 ? '#58d66a' : pct > 20 ? '#f5b431' : '#ff5d5d'
