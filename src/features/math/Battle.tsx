@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SnapshotFrom } from 'xstate'
 import type { gameMachine, GameEvent } from './machine'
 import { PLAYER_MAX_HP } from './data'
+import type { Buddy } from '../../shared/progress'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 
 type Snapshot = SnapshotFrom<typeof gameMachine>
@@ -27,7 +28,15 @@ interface Fx {
   banner: BattleBanner | null
 }
 
-export function Battle({ state, send }: { state: Snapshot; send: Send }) {
+export function Battle({
+  state,
+  send,
+  buddy,
+}: {
+  state: Snapshot
+  send: Send
+  buddy: Buddy
+}) {
   const ctx = state.context
   const sub = battleSubstate(state)
   const answered = sub === 'correct' || sub === 'wrong'
@@ -76,8 +85,7 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sub])
 
-  const { enemy, problem, hero } = ctx
-  if (!hero) return null
+  const { enemy, problem } = ctx
 
   const bgFile = ctx.background
   const total = ctx.enemyOrder.length
@@ -92,8 +100,10 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
       enemyHp={enemy?.hp ?? 0}
       enemyMaxHp={enemy?.maxHp ?? 1}
       enemyLevel={enemy?.maxHp}
-      heroSprite={hero.sprite}
-      heroName={hero.name}
+      heroSprite={buddy.sprite}
+      heroName={buddy.name}
+      heroLevel={buddy.level}
+      heroExpPct={buddy.expPct}
       heroHp={ctx.hp}
       heroMaxHp={PLAYER_MAX_HP}
       phase={phase}

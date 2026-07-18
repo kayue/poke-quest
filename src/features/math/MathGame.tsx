@@ -1,18 +1,53 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMachine } from '@xstate/react'
-import type { SnapshotFrom } from 'xstate'
 import { gameMachine, type GameEvent } from './machine'
 import { AGES } from './data'
-import type { Hero } from '../../shared/heroes'
+import { pokedexEntry } from '../../shared/pokedex'
+import { defeatExp, type Buddy } from '../../shared/progress'
 import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
 
 type Send = (event: GameEvent) => void
 
 /** The Maths Quest activity. Runs its own state machine (with the shared
- *  buddy passed in) and calls `onExit` when the player leaves to the home. */
-export function MathGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
-  const [state, send] = useMachine(gameMachine, { input: { hero } })
+ *  buddy passed in) and calls `onExit` when the player leaves to the home.
+ *  Awards EXP to the buddy each time a wild Pokémon is defeated. */
+export function MathGame({
+  buddy,
+  onExp,
+  onExit,
+}: {
+  buddy: Buddy
+  onExp: (amount: number) => void
+  onExit: () => void
+}) {
+  const [state, send] = useMachine(gameMachine, {
+    input: { hero: { id: buddy.baseId, name: buddy.name, sprite: buddy.sprite, blurb: '' } },
+  })
+
+  // Track how many foes we've already paid EXP for, so each defeat rewards once.
+  const paidDefeats = useRef(0)
+  const [gained, setGained] = useState(0)
+  const { defeated, enemyOrder, age } = state.context
+  useEffect(() => {
+    // A fresh run (RETRY) resets the defeated count — resync without paying.
+    if (defeated < paidDefeats.current) {
+      paidDefeats.current = defeated
+      setGained(0)
+      return
+    }
+    let award = 0
+    for (let i = paidDefeats.current; i < defeated; i++) {
+      const isBoss = !!pokedexEntry(enemyOrder[i])?.boss
+      award += defeatExp(age, isBoss)
+    }
+    if (award > 0) {
+      paidDefeats.current = defeated
+      onExp(award)
+      setGained((g) => g + award)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defeated])
 
   // The machine's `exit` state is final; when reached, hand control back.
   useEffect(() => {
@@ -24,9 +59,13 @@ export function MathGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
   return (
     <>
       {state.matches('ageSelect') && <AgeSelect send={send} />}
-      {state.matches('battle') && <Battle state={state} send={send} />}
-      {state.matches('victory') && <Result kind="win" state={state} send={send} />}
-      {state.matches('defeat') && <Result kind="lose" state={state} send={send} />}
+      {state.matches('battle') && <Battle state={state} send={send} buddy={buddy} />}
+      {state.matches('victory') && (
+        <Result kind="win" buddy={buddy} gained={gained} send={send} />
+      )}
+      {state.matches('defeat') && (
+        <Result kind="lose" buddy={buddy} gained={gained} send={send} />
+      )}
     </>
   )
 }
@@ -65,14 +104,15 @@ function AgeSelect({ send }: { send: Send }) {
 
 function Result({
   kind,
-  state,
+  buddy,
+  gained,
   send,
 }: {
   kind: 'win' | 'lose'
-  state: SnapshotFrom<typeof gameMachine>
+  buddy: Buddy
+  gained: number
   send: Send
 }) {
-  const ctx = state.context
   return (
     <ResultScreen
       kind={kind}
@@ -82,10 +122,10 @@ function Result({
           ? 'Amazing maths skills! Ready for the next challenge?'
           : 'Good try! Every hero gets stronger with practice.'
       }
-      heroSprite={ctx.hero?.sprite ?? 'pikachu.png'}
+      heroSprite={buddy.sprite}
       stats={[
-        { label: 'Score', value: ctx.score },
-        { label: 'Beaten', value: ctx.defeated },
+        { label: 'EXP gained', value: `+${gained}` },
+        { label: 'Level', value: buddy.level },
       ]}
       onHome={() => send({ type: 'HOME' })}
       onRetry={() => send({ type: 'RETRY' })}

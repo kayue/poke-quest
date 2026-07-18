@@ -14,17 +14,21 @@ export interface PokedexEntry {
   nameEn: string
   nameZh: string // Traditional Chinese name
   boss?: boolean // legendary / powerful — games may headline these as bosses
+  // Evolution: when a buddy the player trains reaches `evolveLevel`, it evolves
+  // into `evolvesTo` (another Pokédex id). Both are set together, or neither.
+  evolvesTo?: string
+  evolveLevel?: number
 }
 
 export const POKEDEX: PokedexEntry[] = [
-  { id: 'bulbasaur', sprite: 'bulbasaur.png', nameEn: "Bulbasaur", nameZh: '奇異種子' },
-  { id: 'ivysaur', sprite: 'ivysaur.png', nameEn: "Ivysaur", nameZh: '奇異草' },
+  { id: 'bulbasaur', sprite: 'bulbasaur.png', nameEn: "Bulbasaur", nameZh: '奇異種子', evolvesTo: 'ivysaur', evolveLevel: 16 },
+  { id: 'ivysaur', sprite: 'ivysaur.png', nameEn: "Ivysaur", nameZh: '奇異草', evolvesTo: 'venusaur', evolveLevel: 32 },
   { id: 'venusaur', sprite: 'venusaur.png', nameEn: "Venusaur", nameZh: '奇異花' , boss: true },
-  { id: 'charmander', sprite: 'charmander.png', nameEn: "Charmander", nameZh: '小火龍' },
-  { id: 'charmeleon', sprite: 'charmeleon.png', nameEn: "Charmeleon", nameZh: '火恐龍' },
+  { id: 'charmander', sprite: 'charmander.png', nameEn: "Charmander", nameZh: '小火龍', evolvesTo: 'charmeleon', evolveLevel: 16 },
+  { id: 'charmeleon', sprite: 'charmeleon.png', nameEn: "Charmeleon", nameZh: '火恐龍', evolvesTo: 'charizard', evolveLevel: 36 },
   { id: 'charizard', sprite: 'charizard.png', nameEn: "Charizard", nameZh: '噴火龍' , boss: true },
-  { id: 'squirtle', sprite: 'squirtle.png', nameEn: "Squirtle", nameZh: '車厘龜' },
-  { id: 'wartortle', sprite: 'wartortle.png', nameEn: "Wartortle", nameZh: '卡美龜' },
+  { id: 'squirtle', sprite: 'squirtle.png', nameEn: "Squirtle", nameZh: '車厘龜', evolvesTo: 'wartortle', evolveLevel: 16 },
+  { id: 'wartortle', sprite: 'wartortle.png', nameEn: "Wartortle", nameZh: '卡美龜', evolvesTo: 'blastoise', evolveLevel: 36 },
   { id: 'blastoise', sprite: 'blastoise.png', nameEn: "Blastoise", nameZh: '水箭龜' , boss: true },
   { id: 'caterpie', sprite: 'caterpie.png', nameEn: "Caterpie", nameZh: '綠毛蟲' },
   { id: 'metapod', sprite: 'metapod.png', nameEn: "Metapod", nameZh: '鐵甲蟲' },
@@ -41,7 +45,9 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'fearow', sprite: 'fearow.png', nameEn: "Fearow", nameZh: '魔雀' },
   { id: 'ekans', sprite: 'ekans.png', nameEn: "Ekans", nameZh: '阿柏蛇' },
   { id: 'arbok', sprite: 'arbok.png', nameEn: "Arbok", nameZh: '阿柏怪' },
-  { id: 'pikachu', sprite: 'pikachu.png', nameEn: "Pikachu", nameZh: '比卡超' },
+  // House rule: Pikachu→Raichu is a Thunder Stone evolution in canon (no level),
+  // gated here at 16 to match a stage-1 line's first evolution.
+  { id: 'pikachu', sprite: 'pikachu.png', nameEn: "Pikachu", nameZh: '比卡超', evolvesTo: 'raichu', evolveLevel: 16 },
   { id: 'raichu', sprite: 'raichu.png', nameEn: "Raichu", nameZh: '雷超' },
   { id: 'sandshrew', sprite: 'sandshrew.png', nameEn: "Sandshrew", nameZh: '穿山鼠' },
   { id: 'sandslash', sprite: 'sandslash.png', nameEn: "Sandslash", nameZh: '穿山王' },
@@ -149,7 +155,9 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'gyarados', sprite: 'gyarados.png', nameEn: "Gyarados", nameZh: '鯉魚龍' , boss: true },
   { id: 'lapras', sprite: 'lapras.png', nameEn: "Lapras", nameZh: '背背龍' , boss: true },
   { id: 'ditto', sprite: 'ditto.png', nameEn: "Ditto", nameZh: '百變怪' },
-  { id: 'eevee', sprite: 'eevee.png', nameEn: "Eevee", nameZh: '伊貝' },
+  // House rule: Eevee→Vaporeon is a Water Stone evolution in canon (no level),
+  // gated here at 16 to match a stage-1 line's first evolution.
+  { id: 'eevee', sprite: 'eevee.png', nameEn: "Eevee", nameZh: '伊貝', evolvesTo: 'vaporeon', evolveLevel: 16 },
   { id: 'vaporeon', sprite: 'vaporeon.png', nameEn: "Vaporeon", nameZh: '水伊貝' },
   { id: 'jolteon', sprite: 'jolteon.png', nameEn: "Jolteon", nameZh: '雷伊貝' },
   { id: 'flareon', sprite: 'flareon.png', nameEn: "Flareon", nameZh: '火伊貝' },
@@ -228,7 +236,7 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'snubbull', sprite: 'snubbull.png', nameEn: "Snubbull", nameZh: '布魯' },
   { id: 'granbull', sprite: 'granbull.png', nameEn: "Granbull", nameZh: '布魯皇' },
   { id: 'qwilfish', sprite: 'qwilfish.png', nameEn: "Qwilfish", nameZh: '千針魚' },
-  { id: 'scizor', sprite: 'scizor.png', nameEn: "Scizor", nameZh: '巨鉗螳螂' , boss: true },
+  { id: 'scizor', sprite: 'scizor.png', nameEn: "Scizor", nameZh: '巨鉗螳螂' },
   { id: 'shuckle', sprite: 'shuckle.png', nameEn: "Shuckle", nameZh: '壺壺' },
   { id: 'heracross', sprite: 'heracross.png', nameEn: "Heracross", nameZh: '赫拉克羅斯' },
   { id: 'sneasel', sprite: 'sneasel.png', nameEn: "Sneasel", nameZh: '狃拉' },
@@ -246,7 +254,7 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'skarmory', sprite: 'skarmory.png', nameEn: "Skarmory", nameZh: '盔甲鳥' },
   { id: 'houndour', sprite: 'houndour.png', nameEn: "Houndour", nameZh: '戴魯比' },
   { id: 'houndoom', sprite: 'houndoom.png', nameEn: "Houndoom", nameZh: '黑魯加' },
-  { id: 'kingdra', sprite: 'kingdra.png', nameEn: "Kingdra", nameZh: '刺龍王' , boss: true },
+  { id: 'kingdra', sprite: 'kingdra.png', nameEn: "Kingdra", nameZh: '刺龍王' },
   { id: 'phanpy', sprite: 'phanpy.png', nameEn: "Phanpy", nameZh: '小小象' },
   { id: 'donphan', sprite: 'donphan.png', nameEn: "Donphan", nameZh: '冬凡' },
   { id: 'porygon2', sprite: 'porygon2.png', nameEn: "Porygon2", nameZh: '立方獸Ⅱ' },
@@ -277,6 +285,23 @@ const BY_ID: Record<string, PokedexEntry> = Object.fromEntries(
 /** Look up a Pokédex entry by its id (undefined if unknown). */
 export function pokedexEntry(id: string): PokedexEntry | undefined {
   return BY_ID[id]
+}
+
+/** Walk a Pokémon's evolution chain, applying every evolution whose level the
+ *  given buddy level has reached. Returns the current (possibly evolved) id.
+ *  Unknown ids are returned unchanged. */
+export function evolvedSpecies(baseId: string, level: number): string {
+  let id = baseId
+  // Guard the loop so a malformed self-referential chain can't spin forever.
+  for (let step = 0; step < 10; step++) {
+    const entry = BY_ID[id]
+    if (entry?.evolvesTo && entry.evolveLevel != null && level >= entry.evolveLevel) {
+      id = entry.evolvesTo
+    } else {
+      break
+    }
+  }
+  return id
 }
 
 /** Legendary / powerful Pokémon, suitable for headlining as a boss. */

@@ -13,12 +13,16 @@ import { charStrokes } from './strokeData'
 import { HanziQuiz, type HanziQuizHandle } from './HanziQuiz'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 import { ResultScreen } from '../../shared/ResultScreen'
-import type { Hero } from '../../shared/heroes'
+import { pokedexEntry } from '../../shared/pokedex'
+import { defeatExp, type Buddy } from '../../shared/progress'
 
 type Snapshot = SnapshotFrom<typeof writingMachine>
 type Send = (event: WritingEvent) => void
 const TIERS: WriteDifficulty[] = ['easy', 'medium', 'hard']
 const WRITE_BG = 'background2.png'
+
+// How much of a challenge each tier is, for EXP scaling (harder pays more).
+const TIER_CHALLENGE: Record<WriteDifficulty, number> = { easy: 5, medium: 7, hard: 9 }
 
 function battleSubstate(state: Snapshot): string {
   const v = state.value as { battle?: string }
@@ -29,9 +33,38 @@ function pickEffect(): string {
   return `attack${1 + Math.floor(Math.random() * 7)}.png`
 }
 
-/** The Chinese Writing activity — a stroke-order battle. */
-export function WritingGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
+/** The Chinese Writing activity — a stroke-order battle. Awards EXP to the
+ *  shared buddy each time a wild Pokémon is defeated. */
+export function WritingGame({
+  buddy,
+  onExp,
+  onExit,
+}: {
+  buddy: Buddy
+  onExp: (amount: number) => void
+  onExit: () => void
+}) {
   const [state, send] = useMachine(writingMachine)
+
+  // Pay EXP once per defeated foe (see MathGame for the same pattern).
+  const paidDefeats = useRef(0)
+  const { defeated, order, difficulty } = state.context
+  useEffect(() => {
+    if (defeated < paidDefeats.current) {
+      paidDefeats.current = defeated
+      return
+    }
+    let award = 0
+    for (let i = paidDefeats.current; i < defeated; i++) {
+      const isBoss = !!pokedexEntry(order[i])?.boss
+      award += defeatExp(TIER_CHALLENGE[difficulty], isBoss)
+    }
+    if (award > 0) {
+      paidDefeats.current = defeated
+      onExp(award)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defeated])
 
   useEffect(() => {
     if (state.status === 'done' || state.matches('exit')) onExit()
@@ -42,9 +75,9 @@ export function WritingGame({ hero, onExit }: { hero: Hero; onExit: () => void }
     return <DifficultySelect send={send} onExit={onExit} />
   }
   if (state.matches('victory') || state.matches('defeat')) {
-    return <WritingResult state={state} send={send} hero={hero} />
+    return <WritingResult state={state} send={send} buddy={buddy} />
   }
-  return <WritingBattle state={state} send={send} hero={hero} />
+  return <WritingBattle state={state} send={send} buddy={buddy} />
 }
 
 function DifficultySelect({ send, onExit }: { send: Send; onExit: () => void }) {
@@ -92,7 +125,7 @@ interface Fx {
   banner: BattleBanner | null
 }
 
-function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; hero: Hero }) {
+function WritingBattle({ state, send, buddy }: { state: Snapshot; send: Send; buddy: Buddy }) {
   const ctx = state.context
   const sub = battleSubstate(state)
   const pokemon = pokemonById(ctx.order[ctx.pos])
@@ -160,8 +193,10 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
       enemyHp={ctx.enemyHp}
       enemyMaxHp={ctx.enemyMaxHp}
       enemyLevel={ctx.enemyMaxHp}
-      heroSprite={hero.sprite}
-      heroName={hero.name}
+      heroSprite={buddy.sprite}
+      heroName={buddy.name}
+      heroLevel={buddy.level}
+      heroExpPct={buddy.expPct}
       heroHp={ctx.hp}
       heroMaxHp={WRITING_MAX_HP}
       phase={phase}
@@ -231,7 +266,7 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
   )
 }
 
-function WritingResult({ state, send, hero }: { state: Snapshot; send: Send; hero: Hero }) {
+function WritingResult({ state, send, buddy }: { state: Snapshot; send: Send; buddy: Buddy }) {
   const ctx = state.context
   const win = state.matches('victory')
   return (
@@ -243,8 +278,11 @@ function WritingResult({ state, send, hero }: { state: Snapshot; send: Send; her
           ? '你學會了好多漢字！ Amazing writing!'
           : '再接再厲！ Every stroke makes you stronger.'
       }
-      heroSprite={hero.sprite}
-      stats={[{ label: '打倒 Beaten', value: ctx.defeated }]}
+      heroSprite={buddy.sprite}
+      stats={[
+        { label: '打倒 Beaten', value: ctx.defeated },
+        { label: '等級 Level', value: buddy.level },
+      ]}
       onHome={() => send({ type: 'HOME' })}
       onRetry={() => send({ type: 'RETRY' })}
       retryLabel="↻ 再玩"

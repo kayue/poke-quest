@@ -1,43 +1,71 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MathGame } from './features/math/MathGame'
 import { WritingGame } from './features/writing/WritingGame'
-import { HEROES, type Hero } from './shared/heroes'
+import { HEROES } from './shared/heroes'
 import { pokemonSrc } from './shared/assets'
+import {
+  loadRoster,
+  resolveBuddy,
+  saveRoster,
+  type Buddy,
+  type RosterState,
+} from './shared/progress'
 
 type View = 'home' | 'heroSelect' | 'math' | 'writing'
 
 export function App() {
   const [view, setView] = useState<View>('home')
-  const [hero, setHero] = useState<Hero>(HEROES[0])
+  const [roster, setRoster] = useState<RosterState>(loadRoster)
   const goHome = () => setView('home')
+
+  // Persist whenever progress changes.
+  useEffect(() => {
+    saveRoster(roster)
+  }, [roster])
+
+  // The active buddy, resolved (name/sprite/level/EXP) from its saved EXP.
+  const buddy = useMemo(
+    () => resolveBuddy(roster.mons[roster.selectedId]),
+    [roster],
+  )
+
+  // Award EXP to the active buddy (called by a game when a foe faints).
+  const awardExp = (amount: number) => {
+    setRoster((prev) => {
+      const mon = prev.mons[prev.selectedId]
+      if (!mon) return prev
+      return {
+        ...prev,
+        mons: { ...prev.mons, [mon.baseId]: { ...mon, exp: mon.exp + amount } },
+      }
+    })
+  }
+
+  const selectBuddy = (baseId: string) => {
+    setRoster((prev) => ({ ...prev, selectedId: baseId }))
+    setView('home')
+  }
 
   return (
     <div className="game-frame">
       {view === 'home' && (
-        <Home hero={hero} onPick={setView} onChangeBuddy={() => setView('heroSelect')} />
+        <Home buddy={buddy} onPick={setView} onChangeBuddy={() => setView('heroSelect')} />
       )}
       {view === 'heroSelect' && (
-        <HeroSelect
-          current={hero}
-          onSelect={(h) => {
-            setHero(h)
-            setView('home')
-          }}
-          onBack={goHome}
-        />
+        <HeroSelect roster={roster} onSelect={selectBuddy} onBack={goHome} />
       )}
-      {view === 'math' && <MathGame hero={hero} onExit={goHome} />}
-      {view === 'writing' && <WritingGame hero={hero} onExit={goHome} />}
+      {view === 'math' && <MathGame buddy={buddy} onExp={awardExp} onExit={goHome} />}
+      {view === 'writing' && <WritingGame buddy={buddy} onExp={awardExp} onExit={goHome} />}
     </div>
   )
 }
 
 function Home({
-  hero,
+  buddy,
   onPick,
   onChangeBuddy,
 }: {
-  hero: Hero
+  buddy: Buddy
   onPick: (v: View) => void
   onChangeBuddy: () => void
 }) {
@@ -50,9 +78,11 @@ function Home({
       </h1>
 
       <button className="buddy-pick" onClick={onChangeBuddy}>
-        <img className="buddy-pick-sprite" src={pokemonSrc(hero.sprite)} alt={hero.name} />
+        <img className="buddy-pick-sprite" src={pokemonSrc(buddy.sprite)} alt={buddy.name} />
         <span className="buddy-pick-text">
-          <span className="buddy-pick-name">{hero.name}</span>
+          <span className="buddy-pick-name">
+            {buddy.name} <span className="buddy-pick-lv">Lv{buddy.level}</span>
+          </span>
           <span className="buddy-pick-hint">Tap to change buddy ⇄</span>
         </span>
       </button>
@@ -74,12 +104,12 @@ function Home({
 }
 
 function HeroSelect({
-  current,
+  roster,
   onSelect,
   onBack,
 }: {
-  current: Hero
-  onSelect: (h: Hero) => void
+  roster: RosterState
+  onSelect: (baseId: string) => void
   onBack: () => void
 }) {
   return (
@@ -91,17 +121,30 @@ function HeroSelect({
         <span className="select-title">Pick your buddy!</span>
       </div>
       <div className="card-grid">
-        {HEROES.map((h) => (
-          <button
-            key={h.id}
-            className={`card ${h.id === current.id ? 'card-selected' : ''}`}
-            onClick={() => onSelect(h)}
-          >
-            <img className="hero-sprite" src={pokemonSrc(h.sprite)} alt={h.name} />
-            <span className="card-name">{h.name}</span>
-            <span className="card-desc">{h.blurb}</span>
-          </button>
-        ))}
+        {HEROES.map((h) => {
+          const buddy = resolveBuddy(roster.mons[h.id])
+          const selected = h.id === roster.selectedId
+          return (
+            <button
+              key={h.id}
+              className={`card ${selected ? 'card-selected' : ''}`}
+              onClick={() => onSelect(h.id)}
+            >
+              <img className="hero-sprite" src={pokemonSrc(buddy.sprite)} alt={buddy.name} />
+              <span className="card-name">
+                {buddy.name} <span className="card-lv">Lv{buddy.level}</span>
+              </span>
+              <div className="card-exp">
+                <div className="card-exp-track">
+                  <div className="card-exp-fill" style={{ width: `${buddy.expPct}%` }} />
+                </div>
+                <span className="card-exp-text">
+                  EXP {buddy.expIntoLevel}/{buddy.expForNext}
+                </span>
+              </div>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

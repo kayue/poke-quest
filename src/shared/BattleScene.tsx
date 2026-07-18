@@ -23,6 +23,7 @@ export interface BattleSceneProps {
   heroSprite: string
   heroName?: string
   heroLevel?: number
+  heroExpPct?: number // 0–100 progress to next level; shown as an EXP bar
   heroHp: number
   heroMaxHp: number
 
@@ -142,15 +143,27 @@ export function BattleScene(props: BattleSceneProps) {
         {/* Buddy on its base (lower-left) */}
         <div className={`mon-spot player-spot ${buddyClass}`}>
           <img className="mon-base player-base-img" src={BASE_PLAYER} alt="" />
-          <img className="buddy-sprite" src={pokemonBackSrc(props.heroSprite)} alt="buddy" />
+          <img
+            className="buddy-sprite"
+            src={pokemonBackSrc(props.heroSprite)}
+            alt="buddy"
+            // Evolved forms have no dedicated back sprite — fall back to the
+            // front sprite so the buddy is never a broken image.
+            onError={(e) => {
+              const img = e.currentTarget
+              const front = pokemonSrc(props.heroSprite)
+              if (img.src !== front) img.src = front
+            }}
+          />
         </div>
 
-        {/* Player status box (lower-right): name + HP bar */}
+        {/* Player status box (lower-right): name + HP bar + EXP bar */}
         <HpBox
           className="player-hpbox"
           name={props.heroName ?? 'Buddy'}
           level={props.heroLevel}
           hpPct={heroPct}
+          expPct={props.heroExpPct}
         />
 
         {active && props.banner && (
@@ -171,11 +184,13 @@ function HpBox({
   name,
   level,
   hpPct,
+  expPct,
 }: {
   className: string
   name: string
   level?: number
   hpPct: number
+  expPct?: number
 }) {
   return (
     <div className={`hpbox ${className}`}>
@@ -189,6 +204,14 @@ function HpBox({
           <div className="hp-fill" style={{ width: `${hpPct}%`, background: hpColor(hpPct) }} />
         </div>
       </div>
+      {expPct != null && (
+        <div className="hp-line exp-line">
+          <span className="hp-tag exp-tag">EXP</span>
+          <div className="hp-track exp-track">
+            <div className="exp-fill" style={{ width: `${expPct}%` }} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
