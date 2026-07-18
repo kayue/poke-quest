@@ -20,7 +20,9 @@ interface Props {
   size?: number
   onComplete: (mistakes: number) => void
   onCorrectStroke?: () => void
-  onMistake?: () => void
+  /** Fired on every wrong stroke. `mistakesOnStroke` is how many times the
+   *  *current* stroke has been missed (1 = first miss on this stroke). */
+  onMistake?: (mistakesOnStroke: number) => void
   onLoadError?: () => void
 }
 
@@ -41,10 +43,10 @@ export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
 
   const startQuiz = useCallback((writer: HanziWriter) => {
     writer.quiz({
-      leniency: 1.5, // forgiving for small fingers
-      showHintAfterMisses: 2,
+      leniency: 2, // forgiving for small fingers
+      showHintAfterMisses: 1,
       onCorrectStroke: () => cbs.current.onCorrectStroke?.(),
-      onMistake: () => cbs.current.onMistake?.(),
+      onMistake: (strokeData) => cbs.current.onMistake?.(strokeData.mistakesOnStroke),
       onComplete: (summary) => cbs.current.onComplete(summary.totalMistakes),
     })
   }, [])

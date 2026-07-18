@@ -131,7 +131,7 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
     send({ type: 'STROKE_OK' })
   }
 
-  const handleMistake = () => {
+  const handleMistake = (mistakesOnStroke: number) => {
     setCaption('哎呀，再試一次！')
     setFx((p) => ({
       pulse: p.pulse + 1,
@@ -141,7 +141,9 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
       floatKind: 'miss',
       banner: { text: '再試！', kind: 'bad' },
     }))
-    send({ type: 'STROKE_BAD' })
+    // Only hurt on the first miss of a stroke — repeated misses on the same
+    // stroke let the player study the hint without draining HP.
+    if (mistakesOnStroke <= 1) send({ type: 'STROKE_BAD' })
   }
 
   const handleComplete = () => {
