@@ -427,7 +427,7 @@ img {
   width: 170px; height: 170px;
   object-fit: contain;
   object-position: center bottom;
-  margin-bottom: -25px;
+  margin-bottom: -10px;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,0.45));
   animation: bob 5s ease-in-out infinite;
   z-index: 1;

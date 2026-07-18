@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SnapshotFrom } from 'xstate'
 import type { gameMachine, GameEvent } from './machine'
 import { PLAYER_MAX_HP, STAGES } from './data'
@@ -9,6 +9,9 @@ type Send = (event: GameEvent) => void
 
 const PRAISE = ['Great!', 'Awesome!', 'Super!', 'Nice one!', 'Boom!', 'Yeah!', 'Wow!']
 const ENCOURAGE = ['Try again!', 'Almost!', 'Oops!', "You've got this!"]
+
+// Seconds the player gets to answer before taking one hit.
+const ANSWER_SECONDS = 10
 
 function battleSubstate(state: Snapshot): string {
   const v = state.value as { battle?: string }
@@ -29,6 +32,8 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
   const sub = battleSubstate(state)
   const answered = sub === 'correct' || sub === 'wrong'
   const isCorrect = sub === 'correct'
+  // Tiles are live both on the timed first attempt and the untimed retry.
+  const answerable = sub === 'answering' || sub === 'answeringLate'
 
   // Translate the machine's correct/wrong substates into a one-shot battle FX.
   const [fx, setFx] = useState<Fx>({
@@ -57,6 +62,15 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
         float: 'miss!',
         floatKind: 'miss',
         banner: { text: ENCOURAGE[(p.pulse + 1) % ENCOURAGE.length], kind: 'bad' },
+      }))
+    } else if (sub === 'timeout') {
+      setFx((p) => ({
+        pulse: p.pulse + 1,
+        kind: 'hurt',
+        effect: '',
+        float: 'time!',
+        floatKind: 'miss',
+        banner: { text: "Time's up!", kind: 'bad' },
       }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,6 +117,9 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
       progressTotal={total}
       onHome={() => send({ type: 'HOME' })}
     >
+      {sub === 'answering' && (
+        <Countdown seconds={ANSWER_SECONDS} onExpire={() => send({ type: 'TIMEOUT' })} />
+      )}
       <Equation
         problem={problem}
         answered={answered}
@@ -122,7 +139,7 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
               <button
                 key={`${i}-${n}`}
                 className={`num-tile ${cls}`}
-                disabled={sub !== 'answering'}
+                disabled={!answerable}
                 onClick={() => send({ type: 'ANSWER', value: n })}
               >
                 {n}
@@ -133,6 +150,21 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
       </div>
     </BattleScene>
   )
+}
+
+/** Headless answer timer (renders nothing). Mounted only during the timed
+ *  `answering` state, so it resets on every new problem and fires `onExpire`
+ *  exactly once, `seconds` after mount. */
+function Countdown({ seconds, onExpire }: { seconds: number; onExpire: () => void }) {
+  const onExpireRef = useRef(onExpire)
+  onExpireRef.current = onExpire
+
+  useEffect(() => {
+    const id = window.setTimeout(() => onExpireRef.current(), seconds * 1000)
+    return () => window.clearTimeout(id)
+  }, [seconds])
+
+  return null
 }
 
 function Equation({

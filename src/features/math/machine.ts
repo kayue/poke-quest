@@ -40,6 +40,7 @@ export type GameEvent =
   | { type: 'START_ADVENTURE'; stageIndex: number }
   | { type: 'START_PRACTICE' }
   | { type: 'ANSWER'; value: number }
+  | { type: 'TIMEOUT' }
   | { type: 'BACK' }
   | { type: 'HOME' }
   | { type: 'RETRY' }
@@ -94,6 +95,8 @@ const T_CORRECT = 950
 // Linger after a wrong answer so the child can study the highlighted
 // correct tile before the next problem appears.
 const T_WRONG = 3000
+// Brief "Time's up!" beat after the answer timer runs out.
+const T_TIMEOUT = 1000
 const T_FAINT = 1100
 
 export const gameMachine = setup({
@@ -195,6 +198,32 @@ export const gameMachine = setup({
             lastAnswerCorrect: null,
             lastSelected: null,
           }),
+          on: {
+            ANSWER: [
+              { guard: 'isCorrect', target: 'correct' },
+              { target: 'wrong' },
+            ],
+            TIMEOUT: 'timeout',
+          },
+        },
+
+        // The 10s answer timer expired: take a single hit, then let the
+        // player keep working the same problem. The timer does NOT re-arm
+        // (answeringLate has no TIMEOUT handler), so damage lands once.
+        timeout: {
+          entry: assign({
+            hp: ({ context }) =>
+              context.practice ? context.hp : context.hp - PLAYER_HURT,
+          }),
+          after: {
+            [T_TIMEOUT]: [
+              { guard: 'playerDead', target: '#game.defeat' },
+              { target: 'answeringLate' },
+            ],
+          },
+        },
+
+        answeringLate: {
           on: {
             ANSWER: [
               { guard: 'isCorrect', target: 'correct' },
