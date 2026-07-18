@@ -9,6 +9,7 @@ import { setup, assign } from 'xstate'
 import {
   chineseChars,
   pokemonByDifficulty,
+  pokemonById,
   totalStrokes,
   type WriteDifficulty,
 } from './data'
@@ -18,7 +19,8 @@ export const WRITING_HURT = 20 // HP lost per mistake (5 mistakes = faint)
 
 export interface WritingContext {
   difficulty: WriteDifficulty
-  pos: number // index into the current difficulty's list
+  order: string[] // shuffled Pokémon ids for this run (random order)
+  pos: number // index into `order`
   charIndex: number // which character of the current name
   enemyMaxHp: number // total strokes of the current name
   enemyHp: number // strokes still to write
@@ -38,18 +40,25 @@ export type WritingEvent =
   | { type: 'RETRY' }
 
 function currentName(ctx: WritingContext): string {
-  return pokemonByDifficulty(ctx.difficulty)[ctx.pos]?.nameZh ?? ''
-}
-function tierLength(ctx: WritingContext): number {
-  return pokemonByDifficulty(ctx.difficulty).length
+  return pokemonById(ctx.order[ctx.pos])?.nameZh ?? ''
 }
 function chooseEffect(streak: number): string {
   const max = Math.min(7, 3 + Math.floor(streak / 2))
   return `attack${1 + Math.floor(Math.random() * max)}.png`
 }
+/** A randomly-ordered list of the Pokémon ids in a difficulty tier. */
+function shuffledOrder(difficulty: WriteDifficulty): string[] {
+  const ids = pokemonByDifficulty(difficulty).map((p) => p.id)
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[ids[i], ids[j]] = [ids[j], ids[i]]
+  }
+  return ids
+}
 
 const initialContext: WritingContext = {
   difficulty: 'easy',
+  order: [],
   pos: 0,
   charIndex: 0,
   enemyMaxHp: 1,
@@ -72,7 +81,7 @@ export const writingMachine = setup({
   guards: {
     hasMoreChars: ({ context }) =>
       context.charIndex + 1 < chineseChars(currentName(context)).length,
-    hasNextPokemon: ({ context }) => context.pos + 1 < tierLength(context),
+    hasNextPokemon: ({ context }) => context.pos + 1 < context.order.length,
     fatal: ({ context }) => context.hp <= WRITING_HURT,
   },
 }).createMachine({
@@ -88,6 +97,7 @@ export const writingMachine = setup({
           target: 'battle',
           actions: assign({
             difficulty: ({ event }) => event.difficulty,
+            order: ({ event }) => shuffledOrder(event.difficulty),
             pos: 0,
             defeated: 0,
             bestStreak: 0,

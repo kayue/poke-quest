@@ -6,6 +6,7 @@ import {
   DIFFICULTY_META,
   chineseChars,
   pokemonByDifficulty,
+  pokemonById,
   type WriteDifficulty,
 } from './data'
 import { charStrokes } from './strokeData'
@@ -95,8 +96,7 @@ interface Fx {
 function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; hero: Hero }) {
   const ctx = state.context
   const sub = battleSubstate(state)
-  const list = pokemonByDifficulty(ctx.difficulty)
-  const pokemon = list[ctx.pos]
+  const pokemon = pokemonById(ctx.order[ctx.pos])
   const chars = chineseChars(pokemon?.nameZh ?? '')
   const char = chars[ctx.charIndex]
 
@@ -172,7 +172,7 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
       floatKind={fx.floatKind}
       banner={fx.banner}
       progressCurrent={ctx.defeated}
-      progressTotal={list.length}
+      progressTotal={ctx.order.length}
       onHome={() => send({ type: 'HOME' })}
     >
       <div className="write-fight">

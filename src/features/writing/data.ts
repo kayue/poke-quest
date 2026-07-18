@@ -215,3 +215,8 @@ export function pokemonByDifficulty(d: WriteDifficulty): WritingPokemon[] {
     (a, b) => totalStrokes(a.nameZh) - totalStrokes(b.nameZh),
   )
 }
+
+/** Look up a Pokémon by its id. */
+export function pokemonById(id: string): WritingPokemon | undefined {
+  return WRITING_POKEMON.find((p) => p.id === id)
+}
