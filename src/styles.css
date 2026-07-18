@@ -423,7 +423,7 @@ img {
 .float-text.dmg { color: var(--gold); }
 .float-text.miss { color: var(--bad); }
 
-/* Equation zone */
+/* Equation zone — an HGSS-style dialog box (opaque, framed) */
 .equation {
   position: relative;
   z-index: 2;
@@ -431,12 +431,16 @@ img {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 0 12px;
+  margin: 8px 12px 10px;
+  padding: 12px 14px;
+  min-height: 64px;
+  background: linear-gradient(#ffffff, #e9f0fb);
+  border: 4px solid #2b3f73;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 3px #79aee2, 0 5px 0 rgba(0, 0, 0, 0.3);
   font-family: var(--title-font);
   font-size: 26px;
-  color: #fff;
-  text-shadow: 0 3px 0 #000;
-  min-height: 64px;
+  color: #2b3f73;
 }
 .eq-slot {
   min-width: 46px;
@@ -457,10 +461,15 @@ img {
   border-color: #ffd23f;
   animation: pulse-slot 1.1s ease-in-out infinite;
 }
+.eq-slot.blank.filled-correct,
+.eq-slot.blank.filled-wrong {
+  color: #fff;
+  animation: none;
+}
 .eq-slot.blank.filled-correct { background: var(--good); border-color: var(--good-dark); }
 .eq-slot.blank.filled-wrong { background: var(--bad); border-color: var(--bad-dark); }
 .eq-op, .eq-eq {
-  color: #ffd23f;
+  color: #2b3f73;
   font-family: var(--body-font);
   font-weight: 800;
   font-size: 34px;
