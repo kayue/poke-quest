@@ -1,5 +1,10 @@
 // Static data for the Maths Quest game: enemies, stages, modes.
 // (The player's hero/buddy lives in src/shared/heroes.ts — shared by all modes.)
+//
+// Enemy names and sprites come from the shared Pokédex (src/shared/pokedex.ts);
+// this module only adds the maths-specific HP (how many correct answers are
+// needed to defeat each one) and arranges them into stages.
+import { pokedexEntry } from '../../shared/pokedex'
 
 export type Operation = 'add' | 'sub' | 'mul' | 'mixed'
 
@@ -25,47 +30,25 @@ export interface ModeDef {
 }
 
 // ---- Enemy definitions ----
-export const ENEMIES: Record<string, EnemyDef> = {
-  caterpie: { id: 'caterpie', name: 'Caterpie', sprite: 'caterpie.png', hp: 3 },
-  weedle: { id: 'weedle', name: 'Weedle', sprite: 'weedle.png', hp: 3 },
-  rattata: { id: 'rattata', name: 'Rattata', sprite: 'rattata.png', hp: 3 },
-  pidgey: { id: 'pidgey', name: 'Pidgey', sprite: 'pidgey.png', hp: 3 },
-  zubat: { id: 'zubat', name: 'Zubat', sprite: 'zubat.png', hp: 4 },
-  diglett: { id: 'diglett', name: 'Diglett', sprite: 'diglett.png', hp: 3 },
-  spearow: { id: 'spearow', name: 'Spearow', sprite: 'spearow.png', hp: 4 },
-  ekans: { id: 'ekans', name: 'Ekans', sprite: 'ekans.png', hp: 4 },
-  sandshrew: { id: 'sandshrew', name: 'Sandshrew', sprite: 'sandshrew.png', hp: 4 },
-  geodude: { id: 'geodude', name: 'Geodude', sprite: 'geodude.png', hp: 4 },
-  poliwag: { id: 'poliwag', name: 'Poliwag', sprite: 'poliwag.png', hp: 3 },
-  oddish: { id: 'oddish', name: 'Oddish', sprite: 'oddish.png', hp: 3 },
-  bellsprout: { id: 'bellsprout', name: 'Bellsprout', sprite: 'bellsprout.png', hp: 3 },
-  tentacool: { id: 'tentacool', name: 'Tentacool', sprite: 'tentacool.png', hp: 4 },
-  krabby: { id: 'krabby', name: 'Krabby', sprite: 'krabby.png', hp: 4 },
-  voltorb: { id: 'voltorb', name: 'Voltorb', sprite: 'voltorb.png', hp: 4 },
-  koffing: { id: 'koffing', name: 'Koffing', sprite: 'koffing.png', hp: 4 },
-  meowth: { id: 'meowth', name: 'Meowth', sprite: 'meowth.png', hp: 4 },
-  growlithe: { id: 'growlithe', name: 'Growlithe', sprite: 'growlithe.png', hp: 5 },
-  ponyta: { id: 'ponyta', name: 'Ponyta', sprite: 'ponyta.png', hp: 5 },
-  magikarp: { id: 'magikarp', name: 'Magikarp', sprite: 'magikarp.png', hp: 2 },
-  psyduck: { id: 'psyduck', name: 'Psyduck', sprite: 'psyduck.png', hp: 4 },
-  machop: { id: 'machop', name: 'Machop', sprite: 'machop.png', hp: 5 },
-  gastly: { id: 'gastly', name: 'Gastly', sprite: 'gastly.png', hp: 4 },
+// Maths-specific HP per enemy id; name + sprite are pulled from the Pokédex.
+const ENEMY_HP: Record<string, number> = {
+  caterpie: 3, weedle: 3, rattata: 3, pidgey: 3, zubat: 4, diglett: 3,
+  spearow: 4, ekans: 4, sandshrew: 4, geodude: 4, poliwag: 3, oddish: 3,
+  bellsprout: 3, tentacool: 4, krabby: 4, voltorb: 4, koffing: 4, meowth: 4,
+  growlithe: 5, ponyta: 5, magikarp: 2, psyduck: 4, machop: 5, gastly: 4,
   // Bosses
-  onix: { id: 'onix', name: 'Onix', sprite: 'onix.png', hp: 6 },
-  arcanine: { id: 'arcanine', name: 'Arcanine', sprite: 'arcanine.png', hp: 7 },
-  machamp: { id: 'machamp', name: 'Machamp', sprite: 'machamp.png', hp: 7 },
-  golem: { id: 'golem', name: 'Golem', sprite: 'golem.png', hp: 7 },
-  lapras: { id: 'lapras', name: 'Lapras', sprite: 'lapras.png', hp: 7 },
-  gengar: { id: 'gengar', name: 'Gengar', sprite: 'gengar.png', hp: 8 },
-  gyarados: { id: 'gyarados', name: 'Gyarados', sprite: 'gyarados.png', hp: 8 },
-  snorlax: { id: 'snorlax', name: 'Snorlax', sprite: 'snorlax.png', hp: 8 },
-  dragonite: { id: 'dragonite', name: 'Dragonite', sprite: 'dragonite.png', hp: 9 },
-  articuno: { id: 'articuno', name: 'Articuno', sprite: 'articuno.png', hp: 9 },
-  zapdos: { id: 'zapdos', name: 'Zapdos', sprite: 'zapdos.png', hp: 9 },
-  moltres: { id: 'moltres', name: 'Moltres', sprite: 'moltres.png', hp: 9 },
-  charizard: { id: 'charizard', name: 'Charizard', sprite: 'charizard.png', hp: 10 },
-  mewtwo: { id: 'mewtwo', name: 'Mewtwo', sprite: 'mewtwo.png', hp: 12 },
+  onix: 6, arcanine: 7, machamp: 7, golem: 7, lapras: 7, gengar: 8,
+  gyarados: 8, snorlax: 8, dragonite: 9, articuno: 9, zapdos: 9, moltres: 9,
+  charizard: 10, mewtwo: 12,
 }
+
+export const ENEMIES: Record<string, EnemyDef> = Object.fromEntries(
+  Object.entries(ENEMY_HP).map(([id, hp]) => {
+    const dex = pokedexEntry(id)
+    if (!dex) throw new Error(`Unknown enemy id not in Pokédex: ${id}`)
+    return [id, { id, name: dex.nameEn, sprite: dex.sprite, hp }]
+  }),
+)
 
 // ---- Stages (dungeons) ----
 export const STAGES: Stage[] = [
