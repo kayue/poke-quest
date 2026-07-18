@@ -1,12 +1,10 @@
-// Static data for the Maths Quest game: enemies, stages, modes.
-// (The player's hero/buddy lives in src/shared/heroes.ts — shared by all modes.)
+// Static data for the Maths Quest game: enemies, stages, age levels.
+// (The player's hero/buddy lives in src/shared/heroes.ts — shared by all games.)
 //
 // Enemy names and sprites come from the shared Pokédex (src/shared/pokedex.ts);
 // this module only adds the maths-specific HP (how many correct answers are
 // needed to defeat each one) and arranges them into stages.
 import { pokedexEntry } from '../../shared/pokedex'
-
-export type Operation = 'add' | 'sub' | 'mul' | 'mixed'
 
 export interface EnemyDef {
   id: string
@@ -20,13 +18,6 @@ export interface Stage {
   name: string
   background: string // filename in /assets/backgrounds
   enemies: string[] // enemy ids, last one is the boss
-}
-
-export interface ModeDef {
-  id: Operation
-  label: string
-  emoji: string
-  desc: string
 }
 
 // ---- Enemy definitions ----
@@ -90,19 +81,23 @@ export const STAGES: Stage[] = [
   },
 ]
 
-export const MODES: ModeDef[] = [
-  { id: 'add', label: 'Adding', emoji: '➕', desc: '3 + 4 = ?' },
-  { id: 'sub', label: 'Subtracting', emoji: '➖', desc: '9 − 5 = ?' },
-  { id: 'mul', label: 'Times Tables', emoji: '✖️', desc: '2 × 5 = ?' },
-  { id: 'mixed', label: 'Mixed', emoji: '🎲', desc: 'A bit of everything!' },
-]
+// ---- Age levels ----
+// The player picks their age; problem difficulty follows an age-based
+// curriculum (see problems.ts). Each level draws 50% from skills introduced at
+// that age, 20% from the age below, and 30% from the age above.
+export interface AgeDef {
+  age: number
+  emoji: string
+  blurb: string // what's newly introduced at this age
+}
 
-export type Difficulty = 'easy' | 'medium' | 'hard'
-
-export const DIFFICULTIES: { id: Difficulty; label: string; emoji: string }[] = [
-  { id: 'easy', label: 'Easy', emoji: '🌱' },
-  { id: 'medium', label: 'Medium', emoji: '⭐' },
-  { id: 'hard', label: 'Hard', emoji: '🔥' },
+export const AGES: AgeDef[] = [
+  { age: 5, emoji: '🐣', blurb: 'Add & take away to 10, halves, counting' },
+  { age: 6, emoji: '🐥', blurb: 'Adding to 20, 2·5·10 tables, tens & ones' },
+  { age: 7, emoji: '🦊', blurb: 'Sums to 100, more tables, fractions' },
+  { age: 8, emoji: '🐯', blurb: 'Big sums, dividing, tables to 12, rounding' },
+  { age: 9, emoji: '🦉', blurb: '2-digit ×, percentages, rounding to 100' },
+  { age: 10, emoji: '🐲', blurb: 'Algebra, %, decimals, order of operations' },
 ]
 
 export const PLAYER_MAX_HP = 100

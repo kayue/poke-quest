@@ -1,5 +1,5 @@
 // XState v5 machine for the Maths Quest activity:
-// mode -> difficulty -> journey -> battle -> victory/defeat -> exit
+// age -> journey -> battle -> victory/defeat -> exit
 // (The buddy hero is chosen on the home screen and passed in as input.)
 import { setup, assign } from 'xstate'
 import {
@@ -7,9 +7,7 @@ import {
   STAGES,
   PLAYER_MAX_HP,
   PLAYER_HURT,
-  type Difficulty,
   type EnemyDef,
-  type Operation,
 } from './data'
 import type { Hero } from '../../shared/heroes'
 import { generateProblem, type Problem } from './problems'
@@ -21,8 +19,7 @@ export interface EnemyRuntime {
 }
 
 export interface GameContext {
-  mode: Operation
-  difficulty: Difficulty
+  age: number
   hero: Hero | null
   practice: boolean
   stageIndex: number
@@ -39,8 +36,7 @@ export interface GameContext {
 }
 
 export type GameEvent =
-  | { type: 'SELECT_MODE'; mode: Operation }
-  | { type: 'SELECT_DIFFICULTY'; difficulty: Difficulty }
+  | { type: 'SELECT_AGE'; age: number }
   | { type: 'START_ADVENTURE'; stageIndex: number }
   | { type: 'START_PRACTICE' }
   | { type: 'ANSWER'; value: number }
@@ -72,12 +68,11 @@ function spawnEnemy(ctx: GameContext): EnemyRuntime {
 }
 
 function freshProblem(ctx: GameContext): Problem {
-  return generateProblem(ctx.mode, ctx.difficulty)
+  return generateProblem(ctx.age)
 }
 
 const initialContext: GameContext = {
-  mode: 'add',
-  difficulty: 'easy',
+  age: 5,
   hero: null,
   practice: false,
   stageIndex: 0,
@@ -116,7 +111,7 @@ export const gameMachine = setup({
 }).createMachine({
   id: 'game',
   context: ({ input }) => ({ ...initialContext, hero: input.hero }),
-  initial: 'modeSelect',
+  initial: 'ageSelect',
   states: {
     // Reached when the player leaves the Maths Quest entirely. MathGame
     // watches for this and returns to the app home screen.
@@ -124,23 +119,13 @@ export const gameMachine = setup({
       type: 'final',
     },
 
-    modeSelect: {
+    ageSelect: {
       on: {
-        SELECT_MODE: {
-          target: 'difficultySelect',
-          actions: assign({ mode: ({ event }) => event.mode }),
+        SELECT_AGE: {
+          target: 'journeySelect',
+          actions: assign({ age: ({ event }) => event.age }),
         },
         BACK: 'exit',
-      },
-    },
-
-    difficultySelect: {
-      on: {
-        SELECT_DIFFICULTY: {
-          target: 'journeySelect',
-          actions: assign({ difficulty: ({ event }) => event.difficulty }),
-        },
-        BACK: 'modeSelect',
       },
     },
 
@@ -180,7 +165,7 @@ export const gameMachine = setup({
             lastSelected: null,
           }),
         },
-        BACK: 'difficultySelect',
+        BACK: 'ageSelect',
       },
     },
 

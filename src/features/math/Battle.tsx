@@ -154,25 +154,42 @@ function Equation({
     'eq-slot blank' + (answered ? (isCorrect ? ' filled-correct' : ' filled-wrong') : '')
   const blankValue = answered && selected !== null ? selected : ''
 
-  if (problem.style === 'result') {
-    return (
-      <div className="equation">
-        <span className="eq-slot">{problem.a}</span>
-        <span className="eq-op">{problem.opSymbol}</span>
-        <span className="eq-slot">{problem.b}</span>
-        <span className="eq-eq">=</span>
-        <span className={blankClass}>{blankValue}</span>
-      </div>
-    )
-  }
-
   return (
     <div className="equation">
-      <span className="eq-slot">{problem.a}</span>
-      <span className="eq-op">{problem.opSymbol}</span>
-      <span className={blankClass}>{blankValue}</span>
-      <span className="eq-eq">=</span>
-      <span className="eq-slot">{problem.result}</span>
+      {problem.parts.map((part, i) => {
+        switch (part.t) {
+          case 'num':
+            return (
+              <span key={i} className="eq-slot">
+                {part.v}
+              </span>
+            )
+          case 'op':
+            return (
+              <span key={i} className="eq-op">
+                {part.v}
+              </span>
+            )
+          case 'eq':
+            return (
+              <span key={i} className="eq-eq">
+                =
+              </span>
+            )
+          case 'txt':
+            return (
+              <span key={i} className="eq-txt">
+                {part.v}
+              </span>
+            )
+          case 'blank':
+            return (
+              <span key={i} className={blankClass}>
+                {blankValue}
+              </span>
+            )
+        }
+      })}
     </div>
   )
 }

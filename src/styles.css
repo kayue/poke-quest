@@ -180,7 +180,7 @@ img {
 .tagline { color: var(--muted); font-size: 16px; max-width: 320px; }
 
 /* ============================================================
-   Selection screens (hero / mode / difficulty / journey)
+   Selection screens (hero / age / journey)
    ============================================================ */
 .select-screen {
   padding: 18px 16px 22px;
@@ -230,6 +230,17 @@ img {
   height: 84px;
   object-fit: contain;
   animation: bob 1.6s ease-in-out infinite;
+}
+
+/* Age level cards: big emoji + "Age N" + a line of what's newly practised. */
+.age-card {
+  justify-content: flex-start;
+  min-height: 148px;
+}
+.age-card .card-name {
+  color: var(--gold);
+  font-family: var(--title-font);
+  font-size: 15px;
 }
 
 .stage-card {
@@ -423,6 +434,7 @@ img {
   position: relative;
   z-index: 2;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -469,6 +481,15 @@ img {
   font-weight: 800;
   font-size: 34px;
   line-height: 1;
+}
+/* Free-text labels in a question, e.g. "½ of", "Round", "20% of". Smaller and
+   in the body font so word prompts stay readable next to the big number tiles. */
+.eq-txt {
+  color: #2b3f73;
+  font-family: var(--body-font);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.1;
 }
 
 /* Number grid */

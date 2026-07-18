@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useMachine } from '@xstate/react'
 import type { SnapshotFrom } from 'xstate'
 import { gameMachine, type GameEvent } from './machine'
-import { DIFFICULTIES, ENEMIES, MODES, STAGES } from './data'
+import { AGES, ENEMIES, STAGES } from './data'
 import type { Hero } from '../../shared/heroes'
 import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
@@ -23,8 +23,7 @@ export function MathGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
 
   return (
     <>
-      {state.matches('modeSelect') && <ModeSelect send={send} />}
-      {state.matches('difficultySelect') && <DifficultySelect send={send} />}
+      {state.matches('ageSelect') && <AgeSelect send={send} />}
       {state.matches('journeySelect') && <JourneySelect send={send} />}
       {state.matches('battle') && <Battle state={state} send={send} />}
       {state.matches('victory') && <Result kind="win" state={state} send={send} />}
@@ -44,40 +43,20 @@ function SelectHeader({ title, onBack }: { title: string; onBack: () => void }) 
   )
 }
 
-function ModeSelect({ send }: { send: Send }) {
+function AgeSelect({ send }: { send: Send }) {
   return (
     <div className="screen select-screen">
-      <SelectHeader title="What shall we practise?" onBack={() => send({ type: 'BACK' })} />
+      <SelectHeader title="How old are you?" onBack={() => send({ type: 'BACK' })} />
       <div className="card-grid">
-        {MODES.map((m) => (
+        {AGES.map((a) => (
           <button
-            key={m.id}
-            className="card"
-            onClick={() => send({ type: 'SELECT_MODE', mode: m.id })}
+            key={a.age}
+            className="card age-card"
+            onClick={() => send({ type: 'SELECT_AGE', age: a.age })}
           >
-            <span className="emoji">{m.emoji}</span>
-            <span className="card-name">{m.label}</span>
-            <span className="card-desc">{m.desc}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function DifficultySelect({ send }: { send: Send }) {
-  return (
-    <div className="screen select-screen">
-      <SelectHeader title="How tricky?" onBack={() => send({ type: 'BACK' })} />
-      <div className="card-grid">
-        {DIFFICULTIES.map((d) => (
-          <button
-            key={d.id}
-            className="card full-span"
-            onClick={() => send({ type: 'SELECT_DIFFICULTY', difficulty: d.id })}
-          >
-            <span className="emoji">{d.emoji}</span>
-            <span className="card-name">{d.label}</span>
+            <span className="emoji">{a.emoji}</span>
+            <span className="card-name">Age {a.age}</span>
+            <span className="card-desc">{a.blurb}</span>
           </button>
         ))}
       </div>
