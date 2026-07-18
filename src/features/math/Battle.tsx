@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SnapshotFrom } from 'xstate'
 import type { gameMachine, GameEvent } from './machine'
-import { PLAYER_MAX_HP, STAGES } from './data'
+import { PLAYER_MAX_HP } from './data'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 
 type Snapshot = SnapshotFrom<typeof gameMachine>
@@ -79,10 +79,8 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
   const { enemy, problem, hero } = ctx
   if (!hero) return null
 
-  const bgFile = ctx.practice
-    ? 'background1.png'
-    : STAGES[ctx.stageIndex]?.background ?? 'background1.png'
-  const total = ctx.practice ? 0 : STAGES[ctx.stageIndex]?.enemies.length ?? 1
+  const bgFile = ctx.background
+  const total = ctx.enemyOrder.length
   const phase: BattlePhase =
     sub === 'intro' ? 'intro' : sub === 'enemyFaint' ? 'faint' : 'active'
 
@@ -105,14 +103,6 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
       floatText={fx.float}
       floatKind={fx.floatKind}
       banner={fx.banner}
-      hudRight={
-        ctx.practice ? (
-          <>
-            <span className="progress-label">⭐ {ctx.score}</span>
-            <span className="progress-label">Beaten: {ctx.defeated}</span>
-          </>
-        ) : undefined
-      }
       progressCurrent={ctx.defeated}
       progressTotal={total}
       onHome={() => send({ type: 'HOME' })}

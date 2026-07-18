@@ -1,10 +1,12 @@
 // XState v5 machine for the Maths Quest activity:
-// age -> journey -> battle -> victory/defeat -> exit
+// age -> battle -> victory/defeat -> exit
 // (The buddy hero is chosen on the home screen and passed in as input.)
 import { setup, assign } from 'xstate'
 import {
   ENEMIES,
-  STAGES,
+  BACKGROUNDS,
+  BOSS_IDS,
+  REGULAR_IDS,
   PLAYER_MAX_HP,
   PLAYER_HURT,
   type EnemyDef,
@@ -21,8 +23,7 @@ export interface EnemyRuntime {
 export interface GameContext {
   age: number
   hero: Hero | null
-  practice: boolean
-  stageIndex: number
+  background: string
   enemyOrder: string[]
   enemyPos: number
   enemy: EnemyRuntime | null
@@ -37,19 +38,11 @@ export interface GameContext {
 
 export type GameEvent =
   | { type: 'SELECT_AGE'; age: number }
-  | { type: 'START_ADVENTURE'; stageIndex: number }
-  | { type: 'START_PRACTICE' }
   | { type: 'ANSWER'; value: number }
   | { type: 'TIMEOUT' }
   | { type: 'BACK' }
   | { type: 'HOME' }
   | { type: 'RETRY' }
-
-// Enemies that can appear in endless Practice mode (gentle ones).
-const PRACTICE_POOL = [
-  'caterpie', 'weedle', 'rattata', 'pidgey', 'zubat', 'diglett', 'poliwag',
-  'oddish', 'bellsprout', 'psyduck', 'magikarp', 'meowth', 'growlithe',
-]
 
 const NUM_EFFECTS = 7
 
@@ -57,13 +50,22 @@ function chooseEffect(): string {
   return `attack${1 + Math.floor(Math.random() * NUM_EFFECTS)}.png`
 }
 
-function spawnEnemy(ctx: GameContext): EnemyRuntime {
-  let id: string
-  if (ctx.practice) {
-    id = PRACTICE_POOL[Math.floor(Math.random() * PRACTICE_POOL.length)]
-  } else {
-    id = ctx.enemyOrder[ctx.enemyPos] ?? ctx.enemyOrder[0]
+function pick<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+/** Roll a fresh adventure: a random background and a random line-up of
+ *  5 Pokémon — 4 regular grunts followed by a boss to finish on. */
+function randomAdventure(): { background: string; enemyOrder: string[] } {
+  const grunts = [...REGULAR_IDS].sort(() => Math.random() - 0.5).slice(0, 4)
+  return {
+    background: pick(BACKGROUNDS),
+    enemyOrder: [...grunts, pick(BOSS_IDS)],
   }
+}
+
+function spawnEnemy(ctx: GameContext): EnemyRuntime {
+  const id = ctx.enemyOrder[ctx.enemyPos] ?? ctx.enemyOrder[0]
   const def = ENEMIES[id]
   return { def, hp: def.hp, maxHp: def.hp }
 }
@@ -75,8 +77,7 @@ function freshProblem(ctx: GameContext): Problem {
 const initialContext: GameContext = {
   age: 5,
   hero: null,
-  practice: false,
-  stageIndex: 0,
+  background: 'background1.png',
   enemyOrder: [],
   enemyPos: 0,
   enemy: null,
@@ -109,9 +110,27 @@ export const gameMachine = setup({
     isCorrect: ({ context, event }) =>
       event.type === 'ANSWER' && !!context.problem && event.value === context.problem.answer,
     enemyDown: ({ context }) => !!context.enemy && context.enemy.hp <= 0,
-    playerDead: ({ context }) => !context.practice && context.hp <= 0,
+    playerDead: ({ context }) => context.hp <= 0,
     wasLastEnemy: ({ context }) =>
-      !context.practice && context.enemyPos + 1 >= context.enemyOrder.length,
+      context.enemyPos + 1 >= context.enemyOrder.length,
+  },
+  actions: {
+    // Roll a new random adventure and reset the run's battle state.
+    beginAdventure: assign(() => {
+      const { background, enemyOrder } = randomAdventure()
+      return {
+        background,
+        enemyOrder,
+        enemyPos: 0,
+        hp: PLAYER_MAX_HP,
+        score: 0,
+        defeated: 0,
+        enemy: null,
+        problem: null,
+        lastAnswerCorrect: null,
+        lastSelected: null,
+      }
+    }),
   },
 }).createMachine({
   id: 'game',
@@ -127,50 +146,10 @@ export const gameMachine = setup({
     ageSelect: {
       on: {
         SELECT_AGE: {
-          target: 'journeySelect',
-          actions: assign({ age: ({ event }) => event.age }),
+          target: 'battle',
+          actions: [assign({ age: ({ event }) => event.age }), 'beginAdventure'],
         },
         BACK: 'exit',
-      },
-    },
-
-    journeySelect: {
-      on: {
-        START_ADVENTURE: {
-          target: 'battle',
-          actions: assign(({ event }) => {
-            const stageIndex = event.type === 'START_ADVENTURE' ? event.stageIndex : 0
-            return {
-              practice: false,
-              stageIndex,
-              enemyOrder: STAGES[stageIndex].enemies,
-              enemyPos: 0,
-              hp: PLAYER_MAX_HP,
-              score: 0,
-              defeated: 0,
-              enemy: null,
-              problem: null,
-              lastAnswerCorrect: null,
-              lastSelected: null,
-            }
-          }),
-        },
-        START_PRACTICE: {
-          target: 'battle',
-          actions: assign({
-            practice: true,
-            enemyOrder: [],
-            enemyPos: 0,
-            hp: PLAYER_MAX_HP,
-            score: 0,
-            defeated: 0,
-            enemy: null,
-            problem: null,
-            lastAnswerCorrect: null,
-            lastSelected: null,
-          }),
-        },
-        BACK: 'ageSelect',
       },
     },
 
@@ -212,8 +191,7 @@ export const gameMachine = setup({
         // (answeringLate has no TIMEOUT handler), so damage lands once.
         timeout: {
           entry: assign({
-            hp: ({ context }) =>
-              context.practice ? context.hp : context.hp - PLAYER_HURT,
+            hp: ({ context }) => context.hp - PLAYER_HURT,
           }),
           after: {
             [T_TIMEOUT]: [
@@ -253,8 +231,7 @@ export const gameMachine = setup({
           entry: assign({
             lastAnswerCorrect: false,
             lastSelected: ({ event }) => (event.type === 'ANSWER' ? event.value : null),
-            hp: ({ context }) =>
-              context.practice ? context.hp : context.hp - PLAYER_HURT,
+            hp: ({ context }) => context.hp - PLAYER_HURT,
           }),
           after: {
             [T_WRONG]: [
@@ -282,14 +259,14 @@ export const gameMachine = setup({
     victory: {
       on: {
         HOME: 'exit',
-        RETRY: 'journeySelect',
+        RETRY: { target: 'battle', actions: 'beginAdventure' },
       },
     },
 
     defeat: {
       on: {
         HOME: 'exit',
-        RETRY: 'journeySelect',
+        RETRY: { target: 'battle', actions: 'beginAdventure' },
       },
     },
   },

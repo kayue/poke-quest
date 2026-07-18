@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useMachine } from '@xstate/react'
 import type { SnapshotFrom } from 'xstate'
 import { gameMachine, type GameEvent } from './machine'
-import { AGES, ENEMIES, STAGES } from './data'
+import { AGES } from './data'
 import type { Hero } from '../../shared/heroes'
 import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
@@ -24,7 +24,6 @@ export function MathGame({ hero, onExit }: { hero: Hero; onExit: () => void }) {
   return (
     <>
       {state.matches('ageSelect') && <AgeSelect send={send} />}
-      {state.matches('journeySelect') && <JourneySelect send={send} />}
       {state.matches('battle') && <Battle state={state} send={send} />}
       {state.matches('victory') && <Result kind="win" state={state} send={send} />}
       {state.matches('defeat') && <Result kind="lose" state={state} send={send} />}
@@ -57,41 +56,6 @@ function AgeSelect({ send }: { send: Send }) {
             <span className="emoji">{a.emoji}</span>
             <span className="card-name">Age {a.age}</span>
             <span className="card-desc">{a.blurb}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function JourneySelect({ send }: { send: Send }) {
-  return (
-    <div className="screen select-screen">
-      <SelectHeader title="Choose an adventure" onBack={() => send({ type: 'BACK' })} />
-      <button
-        className="card practice-card full-span stage-card"
-        onClick={() => send({ type: 'START_PRACTICE' })}
-      >
-        <span className="stage-num">🎈</span>
-        <div className="stage-info">
-          <div className="stage-name">Practice Mode</div>
-          <div className="stage-enemies">No pressure — just play and learn!</div>
-        </div>
-      </button>
-      <div className="card-grid">
-        {STAGES.map((s, i) => (
-          <button
-            key={s.id}
-            className="card stage-card full-span"
-            onClick={() => send({ type: 'START_ADVENTURE', stageIndex: i })}
-          >
-            <span className="stage-num">{s.id}</span>
-            <div className="stage-info">
-              <div className="stage-name">{s.name}</div>
-              <div className="stage-enemies">
-                {s.enemies.map((e) => ENEMIES[e]?.name).join(' · ')}
-              </div>
-            </div>
           </button>
         ))}
       </div>

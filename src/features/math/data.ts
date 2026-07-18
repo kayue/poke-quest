@@ -13,13 +13,6 @@ export interface EnemyDef {
   hp: number // number of correct answers needed to defeat
 }
 
-export interface Stage {
-  id: number
-  name: string
-  background: string // filename in /assets/backgrounds
-  enemies: string[] // enemy ids, last one is the boss
-}
-
 // ---- Enemy definitions ----
 // Maths-specific HP per enemy id; name + sprite are pulled from the Pokédex.
 const ENEMY_HP: Record<string, number> = {
@@ -41,45 +34,17 @@ export const ENEMIES: Record<string, EnemyDef> = Object.fromEntries(
   }),
 )
 
-// ---- Stages (dungeons) ----
-export const STAGES: Stage[] = [
-  {
-    id: 1,
-    name: 'Viridian Forest',
-    background: 'background1.png',
-    enemies: ['caterpie', 'weedle', 'rattata', 'onix'],
-  },
-  {
-    id: 2,
-    name: 'Rocky Cave',
-    background: 'background3.png',
-    enemies: ['zubat', 'geodude', 'diglett', 'machop', 'golem'],
-  },
-  {
-    id: 3,
-    name: 'Sunny Meadow',
-    background: 'background2.png',
-    enemies: ['oddish', 'bellsprout', 'ponyta', 'growlithe', 'arcanine'],
-  },
-  {
-    id: 4,
-    name: 'Misty Lake',
-    background: 'background2.png',
-    enemies: ['poliwag', 'tentacool', 'krabby', 'psyduck', 'gyarados'],
-  },
-  {
-    id: 5,
-    name: 'Spooky Tower',
-    background: 'background3.png',
-    enemies: ['gastly', 'koffing', 'voltorb', 'meowth', 'gengar'],
-  },
-  {
-    id: 6,
-    name: 'Champion Peak',
-    background: 'background1.png',
-    enemies: ['snorlax', 'lapras', 'dragonite', 'charizard', 'mewtwo'],
-  },
+// ---- Random adventures ----
+// There's no stage select any more: each run picks a random background and a
+// random line-up of 5 Pokémon (4 regular grunts + 1 boss to finish on).
+export const BACKGROUNDS = ['background1.png', 'background2.png', 'background3.png']
+
+export const BOSS_IDS = [
+  'onix', 'arcanine', 'machamp', 'golem', 'lapras', 'gengar', 'gyarados',
+  'snorlax', 'dragonite', 'articuno', 'zapdos', 'moltres', 'charizard', 'mewtwo',
 ]
+
+export const REGULAR_IDS = Object.keys(ENEMY_HP).filter((id) => !BOSS_IDS.includes(id))
 
 // ---- Age levels ----
 // The player picks their age; problem difficulty follows an age-based
