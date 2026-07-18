@@ -34,12 +34,33 @@ share folds back in — age 5 is 70% current / 30% ahead, age 10 is 80% current 
 
 1. Pick your buddy Pokémon (Pikachu, Charmander, Squirtle, …).
 2. Choose **how old you are** (5–10).
-3. Choose an **Adventure** (6 themed stages ending in a boss) or **Practice
-   Mode** (endless, no lives lost — just learning).
+3. Each run rolls a random background and a line-up of **5 wild Pokémon** — 4
+   grunts and a boss to finish on.
 4. In battle a wild Pokémon shows a problem. Tap the number tile that solves it:
    - **Correct** → your Pokémon attacks and the foe loses HP.
-   - **Wrong** → you lose a heart (and the correct tile is revealed so you learn).
-5. Clear every foe in the stage to **win**. Lose all 5 hearts and it's game over.
+   - **Wrong** (or the 10-second timer runs out) → you take a hit (and the
+     correct tile is revealed so you learn).
+5. Clear all 5 foes to **win**; run out of HP and it's game over.
+
+## Progression: EXP, levels & evolution
+
+Every buddy trains **independently** and its progress is **saved to
+`localStorage`** (key `poke-quest:progress:v1`), so it survives a reload.
+
+- **EXP** is earned each time you defeat a wild Pokémon, scaled by the challenge
+  (older ages and bosses pay more) — so an age-7 problem is worth more than an
+  age-6 one.
+- **Levels** cost progressively more EXP each time, nudging players toward
+  harder problems. The current level and an EXP bar show on the HeroSelect
+  cards, the home buddy pill, and the in-battle HP box.
+- **Evolution** happens at each species' Pokédex level. The starter lines use
+  the official main-series levels (16 / 32 / 36); Pikachu→Raichu and
+  Eevee→Vaporeon are Stone evolutions in canon (no level), so they use a
+  documented level-16 house rule. See
+  [`src/shared/pokedex.ts`](src/shared/pokedex.ts) and
+  [`src/shared/progress.ts`](src/shared/progress.ts).
+- Reaching a new level or evolution plays a full-screen **celebration
+  animation** (see [`src/shared/Celebration.tsx`](src/shared/Celebration.tsx)).
 
 ## Tech
 
@@ -50,8 +71,53 @@ game flow and pure CSS keyframes for the animations.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # production build to dist/
+npm run dev        # http://localhost:5173
+npm run build      # production build to dist/
+npm run typecheck  # type-check without emitting
+```
+
+## Testing progression (EXP / levels / evolution)
+
+A **level-up** is easy to see: a fresh buddy reaches Lv2 after beating its very
+first enemy (the first defeat gives 80–130 EXP; Lv2 needs only 40). So just
+start any battle and beat one Pokémon.
+
+**Evolution** needs Lv16 (~2,700 EXP ≈ 5 runs), so seed the EXP from the
+browser **DevTools → Console** instead of grinding.
+
+**See an evolution in one battle** — paste this, then start a battle and defeat
+one Pokémon:
+
+```js
+const K = 'poke-quest:progress:v1'
+const s = JSON.parse(localStorage.getItem(K))
+s.mons[s.selectedId].exp = 2660   // just below Lv16 → next defeat evolves
+localStorage.setItem(K, JSON.stringify(s))
+location.reload()
+```
+
+Handy EXP values (set `s.mons[s.selectedId].exp` to these) — the **next defeat**
+crosses the threshold and plays the animation:
+
+| `exp` | Next defeat triggers |
+| --- | --- |
+| `20` | Level-up to Lv2 |
+| `2660` | Lv16 + first evolution (e.g. Bulbasaur→Ivysaur, Pikachu→Raichu) |
+| `10480` | Lv32 + Ivysaur→Venusaur |
+| `13240` | Lv36 + Charmeleon→Charizard, Wartortle→Blastoise |
+
+Make sure the buddy you seed is the one selected on the home screen (the snippet
+targets `selectedId`). **Piplup doesn't evolve** (its Gen-4 evolutions aren't in
+this Pokédex), so pick another buddy to test evolution.
+
+**Just view evolved sprites** (no animation): set a high `exp` (e.g. `20000`)
+and reload — the HeroSelect cards, home pill and battle back-sprite show the
+evolved form immediately.
+
+**Reset to a fresh save:**
+
+```js
+localStorage.removeItem('poke-quest:progress:v1'); location.reload()
 ```
 
 ## Credits & references
@@ -66,11 +132,13 @@ All credit for the artwork and the original game concept goes to their authors.
 
 ### Pokémon sprites
 
-- **Pokémon HeartGold/SoulSilver front sprites** — the battle sprites used for
-  heroes and enemies (`public/assets/pokemon/`), sourced as individual files
-  from the [PokeAPI sprites](https://github.com/PokeAPI/sprites) repository
-  (`versions/generation-iv/heartgold-soulsilver`). Pokémon, their sprites and
-  names are © Nintendo / Game Freak / The Pokémon Company.
+- **Pokémon HeartGold/SoulSilver sprites** — the battle sprites used for heroes
+  and enemies, sourced as individual files from the
+  [PokeAPI sprites](https://github.com/PokeAPI/sprites) repository
+  (`versions/generation-iv/heartgold-soulsilver`): **front** sprites in
+  `public/assets/pokemon/` and **back** sprites (the player's buddy, including
+  every reachable evolution) in `public/assets/pokemon/back/`. Pokémon, their
+  sprites and names are © Nintendo / Game Freak / The Pokémon Company.
 - **Battle platforms** (`public/assets/battle/`) are cropped from HGSS/FRLG
   battle-base rips on [The Spriters Resource](https://www.spriters-resource.com/).
 
