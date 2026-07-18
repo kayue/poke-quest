@@ -1,10 +1,11 @@
-// Static data for the Maths Quest game: enemies, stages, age levels.
+// Static data for the Maths Quest game: enemies and age levels.
 // (The player's hero/buddy lives in src/shared/heroes.ts — shared by all games.)
 //
-// Enemy names and sprites come from the shared Pokédex (src/shared/pokedex.ts);
-// this module only adds the maths-specific HP (how many correct answers are
-// needed to defeat each one) and arranges them into stages.
-import { pokedexEntry } from '../../shared/pokedex'
+// Enemies are drawn straight from the shared Pokédex (src/shared/pokedex.ts);
+// this module only layers on the maths-specific HP (how many correct answers
+// are needed to defeat each one). Bosses — flagged in the Pokédex — take twice
+// as many correct answers as a regular Pokémon.
+import { pokedexEntry, type PokedexEntry } from '../../shared/pokedex'
 
 export interface EnemyDef {
   id: string
@@ -13,38 +14,30 @@ export interface EnemyDef {
   hp: number // number of correct answers needed to defeat
 }
 
-// ---- Enemy definitions ----
-// Maths-specific HP per enemy id; name + sprite are pulled from the Pokédex.
-const ENEMY_HP: Record<string, number> = {
-  caterpie: 3, weedle: 3, rattata: 3, pidgey: 3, zubat: 4, diglett: 3,
-  spearow: 4, ekans: 4, sandshrew: 4, geodude: 4, poliwag: 3, oddish: 3,
-  bellsprout: 3, tentacool: 4, krabby: 4, voltorb: 4, koffing: 4, meowth: 4,
-  growlithe: 5, ponyta: 5, magikarp: 2, psyduck: 4, machop: 5, gastly: 4,
-  // Bosses
-  onix: 6, arcanine: 7, machamp: 7, golem: 7, lapras: 7, gengar: 8,
-  gyarados: 8, snorlax: 8, dragonite: 9, articuno: 9, zapdos: 9, moltres: 9,
-  charizard: 10, mewtwo: 12,
+// ---- Enemy HP ----
+export const REGULAR_HP = 4 // correct answers to defeat a regular Pokémon
+export const BOSS_HP = 8 // ...and a boss
+
+function toEnemy(dex: PokedexEntry): EnemyDef {
+  return {
+    id: dex.id,
+    name: dex.nameEn,
+    sprite: dex.sprite,
+    hp: dex.boss ? BOSS_HP : REGULAR_HP,
+  }
 }
 
-export const ENEMIES: Record<string, EnemyDef> = Object.fromEntries(
-  Object.entries(ENEMY_HP).map(([id, hp]) => {
-    const dex = pokedexEntry(id)
-    if (!dex) throw new Error(`Unknown enemy id not in Pokédex: ${id}`)
-    return [id, { id, name: dex.nameEn, sprite: dex.sprite, hp }]
-  }),
-)
+/** Build the battle-time enemy for a Pokédex id (throws if unknown). */
+export function enemyDef(id: string): EnemyDef {
+  const dex = pokedexEntry(id)
+  if (!dex) throw new Error(`Unknown enemy id not in Pokédex: ${id}`)
+  return toEnemy(dex)
+}
 
 // ---- Random adventures ----
 // There's no stage select any more: each run picks a random background and a
 // random line-up of 5 Pokémon (4 regular grunts + 1 boss to finish on).
 export const BACKGROUNDS = ['background1.png', 'background2.png', 'background3.png']
-
-export const BOSS_IDS = [
-  'onix', 'arcanine', 'machamp', 'golem', 'lapras', 'gengar', 'gyarados',
-  'snorlax', 'dragonite', 'articuno', 'zapdos', 'moltres', 'charizard', 'mewtwo',
-]
-
-export const REGULAR_IDS = Object.keys(ENEMY_HP).filter((id) => !BOSS_IDS.includes(id))
 
 // ---- Age levels ----
 // The player picks their age; problem difficulty follows an age-based

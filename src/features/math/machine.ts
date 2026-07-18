@@ -2,15 +2,8 @@
 // age -> battle -> victory/defeat -> exit
 // (The buddy hero is chosen on the home screen and passed in as input.)
 import { setup, assign } from 'xstate'
-import {
-  ENEMIES,
-  BACKGROUNDS,
-  BOSS_IDS,
-  REGULAR_IDS,
-  PLAYER_MAX_HP,
-  PLAYER_HURT,
-  type EnemyDef,
-} from './data'
+import { BACKGROUNDS, enemyDef, PLAYER_MAX_HP, PLAYER_HURT, type EnemyDef } from './data'
+import { BOSS_POKEMON, REGULAR_POKEMON } from '../../shared/pokedex'
 import type { Hero } from '../../shared/heroes'
 import { generateProblem, type Problem } from './problems'
 
@@ -57,16 +50,16 @@ function pick<T>(arr: readonly T[]): T {
 /** Roll a fresh adventure: a random background and a random line-up of
  *  5 Pokémon — 4 regular grunts followed by a boss to finish on. */
 function randomAdventure(): { background: string; enemyOrder: string[] } {
-  const grunts = [...REGULAR_IDS].sort(() => Math.random() - 0.5).slice(0, 4)
+  const grunts = [...REGULAR_POKEMON].sort(() => Math.random() - 0.5).slice(0, 4)
   return {
     background: pick(BACKGROUNDS),
-    enemyOrder: [...grunts, pick(BOSS_IDS)],
+    enemyOrder: [...grunts.map((p) => p.id), pick(BOSS_POKEMON).id],
   }
 }
 
 function spawnEnemy(ctx: GameContext): EnemyRuntime {
   const id = ctx.enemyOrder[ctx.enemyPos] ?? ctx.enemyOrder[0]
-  const def = ENEMIES[id]
+  const def = enemyDef(id)
   return { def, hp: def.hp, maxHp: def.hp }
 }
 
