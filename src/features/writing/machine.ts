@@ -16,6 +16,7 @@ import {
 
 export const WRITING_MAX_HP = 100
 export const WRITING_HURT = 20 // HP lost per mistake (5 mistakes = faint)
+export const ROUND_SIZE = 5 // Pokémon to defeat per round
 
 export interface WritingContext {
   difficulty: WriteDifficulty
@@ -43,14 +44,14 @@ function currentName(ctx: WritingContext): string {
 function chooseEffect(): string {
   return `attack${1 + Math.floor(Math.random() * 7)}.png`
 }
-/** A randomly-ordered list of the Pokémon ids in a difficulty tier. */
+/** 5 random Pokémon ids from a difficulty tier, in random order — one round. */
 function shuffledOrder(difficulty: WriteDifficulty): string[] {
   const ids = pokemonByDifficulty(difficulty).map((p) => p.id)
   for (let i = ids.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[ids[i], ids[j]] = [ids[j], ids[i]]
   }
-  return ids
+  return ids.slice(0, ROUND_SIZE)
 }
 
 const initialContext: WritingContext = {
