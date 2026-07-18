@@ -32,10 +32,12 @@ export function Battle({
   state,
   send,
   buddy,
+  paused = false,
 }: {
   state: Snapshot
   send: Send
   buddy: Buddy
+  paused?: boolean
 }) {
   const ctx = state.context
   const sub = battleSubstate(state)
@@ -117,7 +119,7 @@ export function Battle({
       progressTotal={total}
       onHome={() => send({ type: 'HOME' })}
     >
-      {sub === 'answering' && (
+      {sub === 'answering' && !paused && (
         <Countdown seconds={ANSWER_SECONDS} onExpire={() => send({ type: 'TIMEOUT' })} />
       )}
       <Equation

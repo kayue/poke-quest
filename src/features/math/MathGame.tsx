@@ -16,10 +16,12 @@ export function MathGame({
   buddy,
   onExp,
   onExit,
+  paused = false,
 }: {
   buddy: Buddy
   onExp: (amount: number) => void
   onExit: () => void
+  paused?: boolean
 }) {
   const [state, send] = useMachine(gameMachine, {
     input: { hero: { id: buddy.baseId, name: buddy.name, sprite: buddy.sprite, blurb: '' } },
@@ -59,7 +61,9 @@ export function MathGame({
   return (
     <>
       {state.matches('ageSelect') && <AgeSelect send={send} />}
-      {state.matches('battle') && <Battle state={state} send={send} buddy={buddy} />}
+      {state.matches('battle') && (
+        <Battle state={state} send={send} buddy={buddy} paused={paused} />
+      )}
       {state.matches('victory') && (
         <Result kind="win" buddy={buddy} gained={gained} send={send} />
       )}

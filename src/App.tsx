@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MathGame } from './features/math/MathGame'
 import { WritingGame } from './features/writing/WritingGame'
 import { HEROES } from './shared/heroes'
 import { pokemonSrc } from './shared/assets'
+import { CelebrationOverlay, type Celebration } from './shared/Celebration'
 import {
   loadRoster,
   resolveBuddy,
@@ -18,8 +19,18 @@ export function App() {
   const [roster, setRoster] = useState<RosterState>(loadRoster)
   const goHome = () => setView('home')
 
+  // A queue of level-up / evolution moments waiting to be played, one at a time.
+  const [celebrations, setCelebrations] = useState<Array<{ id: number; event: Celebration }>>([])
+  const celeId = useRef(0)
+
+  // Mirror `roster` in a ref so awardExp (an event handler) always reads the
+  // latest value even across rapid consecutive awards, and can compute the
+  // before/after buddy without a stale closure.
+  const rosterRef = useRef(roster)
+
   // Persist whenever progress changes.
   useEffect(() => {
+    rosterRef.current = roster
     saveRoster(roster)
   }, [roster])
 
@@ -29,22 +40,59 @@ export function App() {
     [roster],
   )
 
-  // Award EXP to the active buddy (called by a game when a foe faints).
+  // Award EXP to the active buddy (called by a game when a foe faints), and
+  // queue any level-up / evolution that the new total triggers.
   const awardExp = (amount: number) => {
-    setRoster((prev) => {
-      const mon = prev.mons[prev.selectedId]
-      if (!mon) return prev
-      return {
-        ...prev,
-        mons: { ...prev.mons, [mon.baseId]: { ...mon, exp: mon.exp + amount } },
-      }
-    })
+    const prev = rosterRef.current
+    const mon = prev.mons[prev.selectedId]
+    if (!mon || amount <= 0) return
+
+    const before = resolveBuddy(mon)
+    const nextMon = { ...mon, exp: mon.exp + amount }
+    const after = resolveBuddy(nextMon)
+
+    const next = { ...prev, mons: { ...prev.mons, [mon.baseId]: nextMon } }
+    rosterRef.current = next
+    setRoster(next)
+
+    const events: Celebration[] = []
+    if (after.level > before.level) {
+      events.push({
+        kind: 'levelup',
+        // Use the pre-evolution species: a buddy grows to the new level *as its
+        // old form*, then the evolution plays. (Identical to `after` when no
+        // evolution happens this award.)
+        name: before.name,
+        sprite: before.sprite,
+        level: after.level,
+        fromLevel: before.level,
+      })
+    }
+    // Show the level-up first, then the evolution it unlocked (classic order).
+    if (after.speciesId !== before.speciesId) {
+      events.push({
+        kind: 'evolve',
+        fromName: before.name,
+        toName: after.name,
+        fromSprite: before.sprite,
+        toSprite: after.sprite,
+        level: after.level,
+      })
+    }
+    if (events.length) {
+      setCelebrations((q) => [...q, ...events.map((event) => ({ id: celeId.current++, event }))])
+    }
   }
 
   const selectBuddy = (baseId: string) => {
     setRoster((prev) => ({ ...prev, selectedId: baseId }))
     setView('home')
   }
+
+  // While a celebration is on screen, the game underneath is paused (the Maths
+  // answer timer must not tick down behind the overlay).
+  const paused = celebrations.length > 0
+  const head = celebrations[0]
 
   return (
     <div className="game-frame">
@@ -54,8 +102,18 @@ export function App() {
       {view === 'heroSelect' && (
         <HeroSelect roster={roster} onSelect={selectBuddy} onBack={goHome} />
       )}
-      {view === 'math' && <MathGame buddy={buddy} onExp={awardExp} onExit={goHome} />}
+      {view === 'math' && (
+        <MathGame buddy={buddy} onExp={awardExp} onExit={goHome} paused={paused} />
+      )}
       {view === 'writing' && <WritingGame buddy={buddy} onExp={awardExp} onExit={goHome} />}
+
+      {head && (
+        <CelebrationOverlay
+          key={head.id}
+          event={head.event}
+          onDone={() => setCelebrations((q) => q.slice(1))}
+        />
+      )}
     </div>
   )
 }
