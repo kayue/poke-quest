@@ -170,34 +170,55 @@ const SKILLS: Skill[] = [
       return { parts, answer }
     },
   },
+  {
+    id: 'compose-to-1000',
+    domain: 'Number Representation & Place Value',
+    age: 5,
+    gen: () => {
+      const h = randInt(1, 9)
+      const t = randInt(0, 9)
+      const o = randInt(0, 9)
+      const parts: Part[] = [
+        { t: 'num', v: h },
+        { t: 'txt', v: 'hundreds' },
+        { t: 'num', v: t },
+        { t: 'txt', v: 'tens' },
+        { t: 'num', v: o },
+        { t: 'txt', v: 'ones' },
+        { t: 'eq' },
+        { t: 'blank' },
+      ]
+      return { parts, answer: h * 100 + t * 10 + o }
+    },
+  },
 
   // ---- Age 6 (Year 1) ----
   {
-    id: 'add-to-20',
+    id: 'add-to-100',
     domain: 'Addition & Subtraction',
     age: 6,
     gen: () => {
-      const answer = randInt(5, 20)
+      const answer = randInt(5, 100)
       const a = randInt(1, answer - 1)
       return eqResult(a, '+', answer - a, answer)
     },
   },
   {
-    id: 'sub-within-20',
+    id: 'sub-within-100',
     domain: 'Addition & Subtraction',
     age: 6,
     gen: () => {
-      const a = randInt(5, 20)
+      const a = randInt(5, 100)
       const b = randInt(1, a)
       return eqResult(a, '−', b, a - b)
     },
   },
   {
-    id: 'tables-2-5-10',
+    id: 'tables-2-3-5-10',
     domain: 'Multiplication & Division',
     age: 6,
     gen: () => {
-      const t = pick([2, 5, 10])
+      const t = pick([2, 3, 5, 10])
       const b = randInt(1, 10)
       // Show the table either way round for variety (2 × 5 or 5 × 2).
       return Math.random() < 0.5
@@ -210,7 +231,7 @@ const SKILLS: Skill[] = [
     domain: 'Counting & Cardinality',
     age: 6,
     gen: () => {
-      const step = pick([2, 3, 5, 10])
+      const step = randInt(2, 10)
       const start = step * randInt(1, 5)
       const parts: Part[] = [
         { t: 'num', v: start },
@@ -224,24 +245,6 @@ const SKILLS: Skill[] = [
       return { parts, answer: start + 3 * step }
     },
   },
-  {
-    id: 'tens-and-ones',
-    domain: 'Number Representation & Place Value',
-    age: 6,
-    gen: () => {
-      const tens = randInt(1, 9)
-      const ones = randInt(0, 9)
-      const parts: Part[] = [
-        { t: 'num', v: tens },
-        { t: 'txt', v: 'tens' },
-        { t: 'num', v: ones },
-        { t: 'txt', v: 'ones' },
-        { t: 'eq' },
-        { t: 'blank' },
-      ]
-      return { parts, answer: tens * 10 + ones }
-    },
-  },
 
   // ---- Age 7 (Year 2) ----
   {
@@ -249,8 +252,8 @@ const SKILLS: Skill[] = [
     domain: 'Addition & Subtraction',
     age: 7,
     gen: () => {
-      const a = randInt(10, 60)
-      const b = randInt(10, 60)
+      const a = randInt(10, 90)
+      const b = randInt(10, 90)
       return eqResult(a, '+', b, a + b)
     },
   },
@@ -289,27 +292,6 @@ const SKILLS: Skill[] = [
         { t: 'blank' },
       ]
       return { parts, answer }
-    },
-  },
-  {
-    id: 'compose-to-1000',
-    domain: 'Number Representation & Place Value',
-    age: 7,
-    gen: () => {
-      const h = randInt(1, 9)
-      const t = randInt(0, 9)
-      const o = randInt(0, 9)
-      const parts: Part[] = [
-        { t: 'num', v: h },
-        { t: 'txt', v: 'hundreds' },
-        { t: 'num', v: t },
-        { t: 'txt', v: 'tens' },
-        { t: 'num', v: o },
-        { t: 'txt', v: 'ones' },
-        { t: 'eq' },
-        { t: 'blank' },
-      ]
-      return { parts, answer: h * 100 + t * 10 + o }
     },
   },
 
@@ -533,16 +515,16 @@ function skillsAt(age: number): Skill[] {
   return SKILLS.filter((s) => s.age === age)
 }
 
-// Choose a skill for the given age using the 20 / 50 / 30 (prev / current /
+// Choose a skill for the given age using the 10 / 55 / 35 (prev / current /
 // next) split, folding any empty neighbour back into the current age.
 function pickSkill(age: number): Skill {
   const current = skillsAt(age)
   const prev = skillsAt(age - 1)
   const next = skillsAt(age + 1)
 
-  const wPrev = prev.length ? 0.2 : 0
-  const wNext = next.length ? 0.3 : 0
-  const wCurrent = 0.5 + (prev.length ? 0 : 0.2) + (next.length ? 0 : 0.3)
+  const wPrev = prev.length ? 0.1 : 0
+  const wNext = next.length ? 0.35 : 0
+  const wCurrent = 0.55 + (prev.length ? 0 : 0.1) + (next.length ? 0 : 0.35)
 
   const buckets = [
     { skills: current, w: wCurrent },
