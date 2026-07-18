@@ -345,8 +345,8 @@ img {
 
 /* Pokémon standing on their bases */
 .mon-spot { position: absolute; display: flex; align-items: flex-end; justify-content: center; }
-.enemy-spot { top: 60px; right: 30px; }
-.player-spot { bottom: 4px; left: 30px; }
+.enemy-spot { top: 20px; right: 30px; }
+.player-spot { bottom: 0px; left: 30px; }
 .mon-base {
   position: absolute;
   bottom: 0; left: 50%;
@@ -367,7 +367,7 @@ img {
   width: 190px; height: 190px;
   object-fit: contain;
   transform: scaleX(-1); /* face the player */
-  filter: drop-shadow(0 5px 4px rgba(0,0,0,0.35));
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.35));
   animation: float 2.6s ease-in-out infinite;
   object-position: center bottom;
 }
@@ -382,20 +382,15 @@ img {
   width: 170px; height: 170px;
   object-fit: contain;
   object-position: center bottom;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 5px 4px rgba(0,0,0,0.45));
-  animation: bob 1.8s ease-in-out infinite;
+  margin-bottom: -10px;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.45));
+  animation: bob 5s ease-in-out infinite;
   z-index: 1;
 }
 .player-spot.atk-a .buddy-sprite,
 .player-spot.atk-b .buddy-sprite { animation: hero-lunge 0.5s ease; }
 .player-spot.hurt-a .buddy-sprite,
 .player-spot.hurt-b .buddy-sprite { animation: hero-hurt 0.5s ease; }
-.player-spot .streak-badge {
-  position: absolute;
-  top: -4px; left: 50%;
-  transform: translateX(-50%);
-}
 
 /* attack effect overlay */
 .attack-fx {
@@ -557,18 +552,6 @@ img {
 .hero-corner.atk-b .hero-battle-sprite { animation: hero-lunge 0.5s ease; }
 .hero-corner.hurt-a .hero-battle-sprite,
 .hero-corner.hurt-b .hero-battle-sprite { animation: hero-hurt 0.5s ease; }
-.streak-badge {
-  background: #ffd23f;
-  color: #5a3200;
-  font-weight: 800;
-  font-size: 13px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-bottom: 6px;
-  box-shadow: var(--shadow);
-  animation: pop-in 0.3s ease;
-}
-
 /* Banner (encouragement) */
 .battle-banner {
   position: absolute;

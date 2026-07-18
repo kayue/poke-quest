@@ -84,7 +84,6 @@ export function Battle({ state, send }: { state: Snapshot; send: Send }) {
       heroName={hero.name}
       heroHp={ctx.hp}
       heroMaxHp={PLAYER_MAX_HP}
-      streak={ctx.streak}
       phase={phase}
       pulse={fx.pulse}
       pulseKind={fx.kind}

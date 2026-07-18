@@ -26,8 +26,6 @@ export interface WritingContext {
   enemyHp: number // strokes still to write
   hp: number // player HP (refills each enemy)
   defeated: number
-  streak: number
-  bestStreak: number
   attackEffect: string
 }
 
@@ -42,9 +40,8 @@ export type WritingEvent =
 function currentName(ctx: WritingContext): string {
   return pokemonById(ctx.order[ctx.pos])?.nameZh ?? ''
 }
-function chooseEffect(streak: number): string {
-  const max = Math.min(7, 3 + Math.floor(streak / 2))
-  return `attack${1 + Math.floor(Math.random() * max)}.png`
+function chooseEffect(): string {
+  return `attack${1 + Math.floor(Math.random() * 7)}.png`
 }
 /** A randomly-ordered list of the Pokémon ids in a difficulty tier. */
 function shuffledOrder(difficulty: WriteDifficulty): string[] {
@@ -65,8 +62,6 @@ const initialContext: WritingContext = {
   enemyHp: 1,
   hp: WRITING_MAX_HP,
   defeated: 0,
-  streak: 0,
-  bestStreak: 0,
   attackEffect: 'attack1.png',
 }
 
@@ -100,7 +95,6 @@ export const writingMachine = setup({
             order: ({ event }) => shuffledOrder(event.difficulty),
             pos: 0,
             defeated: 0,
-            bestStreak: 0,
           }),
         },
       },
@@ -118,7 +112,6 @@ export const writingMachine = setup({
               enemyHp: strokes,
               charIndex: 0,
               hp: WRITING_MAX_HP, // refill each enemy
-              streak: 0,
             }
           }),
           after: { [T_INTRO]: 'writing' },
@@ -129,21 +122,18 @@ export const writingMachine = setup({
             STROKE_OK: {
               actions: assign({
                 enemyHp: ({ context }) => Math.max(0, context.enemyHp - 1),
-                streak: ({ context }) => context.streak + 1,
-                bestStreak: ({ context }) => Math.max(context.bestStreak, context.streak + 1),
-                attackEffect: ({ context }) => chooseEffect(context.streak),
+                attackEffect: () => chooseEffect(),
               }),
             },
             STROKE_BAD: [
               {
                 guard: 'fatal',
                 target: '#writing.defeat',
-                actions: assign({ hp: 0, streak: 0 }),
+                actions: assign({ hp: 0 }),
               },
               {
                 actions: assign({
                   hp: ({ context }) => context.hp - WRITING_HURT,
-                  streak: 0,
                 }),
               },
             ],

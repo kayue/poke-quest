@@ -143,7 +143,6 @@ function Result({
       stats={[
         { label: 'Score', value: ctx.score },
         { label: 'Beaten', value: ctx.defeated },
-        { label: 'Best 🔥', value: ctx.bestStreak },
       ]}
       onHome={() => send({ type: 'HOME' })}
       onRetry={() => send({ type: 'RETRY' })}

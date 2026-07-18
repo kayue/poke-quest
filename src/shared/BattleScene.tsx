@@ -25,7 +25,6 @@ export interface BattleSceneProps {
   heroLevel?: number
   heroHp: number
   heroMaxHp: number
-  streak?: number
 
   phase: BattlePhase
   pulse: number
@@ -137,7 +136,6 @@ export function BattleScene(props: BattleSceneProps) {
         <div className={`mon-spot player-spot ${buddyClass}`}>
           <img className="mon-base player-base-img" src={BASE_PLAYER} alt="" />
           <img className="buddy-sprite" src={pokemonBackSrc(props.heroSprite)} alt="buddy" />
-          {(props.streak ?? 0) >= 2 && <span className="streak-badge">🔥 {props.streak}</span>}
         </div>
 
         {/* Player status box (lower-right): name + HP bar */}

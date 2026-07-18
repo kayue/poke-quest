@@ -25,9 +25,8 @@ function battleSubstate(state: Snapshot): string {
   return typeof v === 'object' && v.battle ? v.battle : ''
 }
 
-function pickEffect(streak: number): string {
-  const max = Math.min(7, 3 + Math.floor(streak / 2))
-  return `attack${1 + Math.floor(Math.random() * max)}.png`
+function pickEffect(): string {
+  return `attack${1 + Math.floor(Math.random() * 7)}.png`
 }
 
 /** The Chinese Writing activity — a stroke-order battle. */
@@ -124,7 +123,7 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
     setFx((p) => ({
       pulse: p.pulse + 1,
       kind: 'hit',
-      effect: pickEffect(ctx.streak),
+      effect: pickEffect(),
       float: '-1',
       floatKind: 'dmg',
       banner: null,
@@ -163,7 +162,6 @@ function WritingBattle({ state, send, hero }: { state: Snapshot; send: Send; her
       heroName={hero.name}
       heroHp={ctx.hp}
       heroMaxHp={WRITING_MAX_HP}
-      streak={ctx.streak}
       phase={phase}
       pulse={fx.pulse}
       pulseKind={fx.kind}
@@ -244,10 +242,7 @@ function WritingResult({ state, send, hero }: { state: Snapshot; send: Send; her
           : '再接再厲！ Every stroke makes you stronger.'
       }
       heroSprite={hero.sprite}
-      stats={[
-        { label: '打倒 Beaten', value: ctx.defeated },
-        { label: 'Best 🔥', value: ctx.bestStreak },
-      ]}
+      stats={[{ label: '打倒 Beaten', value: ctx.defeated }]}
       onHome={() => send({ type: 'HOME' })}
       onRetry={() => send({ type: 'RETRY' })}
       retryLabel="↻ 再玩"

@@ -32,8 +32,6 @@ export interface GameContext {
   problem: Problem | null
   hp: number
   score: number
-  streak: number
-  bestStreak: number
   defeated: number
   lastAnswerCorrect: boolean | null
   lastSelected: number | null
@@ -58,11 +56,8 @@ const PRACTICE_POOL = [
 
 const NUM_EFFECTS = 7
 
-function chooseEffect(streak: number): string {
-  // Bigger streaks pull from the flashier effects.
-  const max = Math.min(NUM_EFFECTS, 3 + Math.floor(streak / 2))
-  const n = 1 + Math.floor(Math.random() * max)
-  return `attack${n}.png`
+function chooseEffect(): string {
+  return `attack${1 + Math.floor(Math.random() * NUM_EFFECTS)}.png`
 }
 
 function spawnEnemy(ctx: GameContext): EnemyRuntime {
@@ -92,8 +87,6 @@ const initialContext: GameContext = {
   problem: null,
   hp: PLAYER_MAX_HP,
   score: 0,
-  streak: 0,
-  bestStreak: 0,
   defeated: 0,
   lastAnswerCorrect: null,
   lastSelected: null,
@@ -164,8 +157,6 @@ export const gameMachine = setup({
               enemyPos: 0,
               hp: PLAYER_MAX_HP,
               score: 0,
-              streak: 0,
-              bestStreak: 0,
               defeated: 0,
               enemy: null,
               problem: null,
@@ -182,8 +173,6 @@ export const gameMachine = setup({
             enemyPos: 0,
             hp: PLAYER_MAX_HP,
             score: 0,
-            streak: 0,
-            bestStreak: 0,
             defeated: 0,
             enemy: null,
             problem: null,
@@ -233,10 +222,8 @@ export const gameMachine = setup({
             lastSelected: ({ event }) => (event.type === 'ANSWER' ? event.value : null),
             enemy: ({ context }) =>
               context.enemy ? { ...context.enemy, hp: context.enemy.hp - 1 } : null,
-            score: ({ context }) => context.score + 10 + context.streak * 2,
-            streak: ({ context }) => context.streak + 1,
-            bestStreak: ({ context }) => Math.max(context.bestStreak, context.streak + 1),
-            attackEffect: ({ context }) => chooseEffect(context.streak),
+            score: ({ context }) => context.score + 10,
+            attackEffect: () => chooseEffect(),
           }),
           after: {
             [T_CORRECT]: [
@@ -252,7 +239,6 @@ export const gameMachine = setup({
             lastSelected: ({ event }) => (event.type === 'ANSWER' ? event.value : null),
             hp: ({ context }) =>
               context.practice ? context.hp : context.hp - PLAYER_HURT,
-            streak: 0,
           }),
           after: {
             [T_WRONG]: [
