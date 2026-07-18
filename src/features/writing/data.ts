@@ -50,21 +50,23 @@ export function totalStrokes(nameZh: string): number {
 export const COMMON_CHARS = new Set(
   Array.from(
     // numbers & size / quantity
-    '一二三六九十大小多少高長巨力半' +
+    '一二三六九十大小多少高長巨力半隻' +
       // nature & elements
       '火水山石土天日月星雷電風海地岩太陽光雲冰田' +
-      // animals
-      '牛馬羊龍魚鳥貓犬狗鼠蟲蛇象豬鹿熊雀雞鴨兔虎' +
+      // animals & creatures
+      '牛馬羊龍魚鳥貓犬狗鼠蟲蛇象豬鹿熊雀雞鴨兔虎蛙獅獸蝶' +
       // body parts
-      '口手頭毛尾角舌眼耳心牙' +
+      '口手頭毛尾角舌眼耳心牙腳拳' +
       // colours
       '白紅黑綠藍黃金銀' +
       // people & family
-      '王子弟公主你我他人男女' +
-      // everyday verbs & adjectives
-      '食飛怪呆傻穿化打走跑叫笑好新老快慢鬼美卡' +
+      '王子弟公主你我他人男女母哥' +
+      // everyday verbs & adjectives & feelings
+      '食飛怪呆傻穿化打走跑叫笑好新老快慢鬼美卡急凍恐迷護奉超幸福吉合噴喵哈麗神達磁' +
       // everyday objects
-      '車球波蛋門花草果米飯',
+      '車球波蛋門花草果米飯貝' +
+      // common name / phonetic characters
+      '巴古伊利耿',
   ),
 )
 
