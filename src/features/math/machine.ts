@@ -24,10 +24,14 @@ export interface GameContext {
   hp: number
   score: number
   defeated: number
-  solved: number // correct answers this run — the Maths Quest's EXP unit
+  expGained: number // total EXP earned this run (for the result screen)
   lastAnswerCorrect: boolean | null
   lastSelected: number | null
   attackEffect: string
+  // Awards EXP to the active buddy. Supplied via input and called once per
+  // faint with the beaten Pokémon's HP — which equals the number of problems it
+  // took to defeat, so EXP reflects problems solved and is paid only on defeat.
+  onExp: (amount: number) => void
 }
 
 export type GameEvent =
@@ -79,10 +83,11 @@ const initialContext: GameContext = {
   hp: PLAYER_MAX_HP,
   score: 0,
   defeated: 0,
-  solved: 0,
+  expGained: 0,
   lastAnswerCorrect: null,
   lastSelected: null,
   attackEffect: 'attack1.png',
+  onExp: () => {},
 }
 
 // Animation / pacing durations (ms)
@@ -99,7 +104,7 @@ export const gameMachine = setup({
   types: {
     context: {} as GameContext,
     events: {} as GameEvent,
-    input: {} as { hero: Hero },
+    input: {} as { hero: Hero; onExp: (amount: number) => void },
   },
   guards: {
     isCorrect: ({ context, event }) =>
@@ -120,7 +125,7 @@ export const gameMachine = setup({
         hp: PLAYER_MAX_HP,
         score: 0,
         defeated: 0,
-        solved: 0,
+        expGained: 0,
         enemy: null,
         problem: null,
         lastAnswerCorrect: null,
@@ -130,7 +135,7 @@ export const gameMachine = setup({
   },
 }).createMachine({
   id: 'game',
-  context: ({ input }) => ({ ...initialContext, hero: input.hero }),
+  context: ({ input }) => ({ ...initialContext, hero: input.hero, onExp: input.onExp }),
   initial: 'ageSelect',
   states: {
     // Reached when the player leaves the Maths Quest entirely. MathGame
@@ -213,7 +218,6 @@ export const gameMachine = setup({
             enemy: ({ context }) =>
               context.enemy ? { ...context.enemy, hp: context.enemy.hp - 1 } : null,
             score: ({ context }) => context.score + 10,
-            solved: ({ context }) => context.solved + 1,
             attackEffect: () => chooseEffect(),
           }),
           after: {
@@ -239,7 +243,15 @@ export const gameMachine = setup({
         },
 
         enemyFaint: {
-          entry: assign({ defeated: ({ context }) => context.defeated + 1 }),
+          // The foe is beaten: award its HP as EXP (= problems it took to beat)
+          // and tally it for the result screen. EXP is paid only here, on faint.
+          entry: [
+            assign({
+              defeated: ({ context }) => context.defeated + 1,
+              expGained: ({ context }) => context.expGained + (context.enemy?.maxHp ?? 0),
+            }),
+            ({ context }) => context.onExp(context.enemy?.maxHp ?? 0),
+          ],
           after: {
             [T_FAINT]: [
               { guard: 'wasLastEnemy', target: '#game.victory' },

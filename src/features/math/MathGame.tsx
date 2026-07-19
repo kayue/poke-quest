@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { useMachine } from '@xstate/react'
 import { gameMachine, type GameEvent } from './machine'
 import { AGES } from './data'
@@ -10,7 +10,8 @@ type Send = (event: GameEvent) => void
 
 /** The Maths Quest activity. Runs its own state machine (with the shared
  *  buddy passed in) and calls `onExit` when the player leaves to the home.
- *  Awards EXP to the buddy each time a wild Pokémon is defeated. */
+ *  The machine awards EXP (via the `onExp` input) each time a foe is beaten —
+ *  1 per problem it took, paid on the faint (see machine.ts `enemyFaint`). */
 export function MathGame({
   buddy,
   onExp,
@@ -23,36 +24,11 @@ export function MathGame({
   paused?: boolean
 }) {
   const [state, send] = useMachine(gameMachine, {
-    input: { hero: { id: buddy.baseId, name: buddy.name, sprite: buddy.sprite, blurb: '' } },
+    input: {
+      hero: { id: buddy.baseId, name: buddy.name, sprite: buddy.sprite, blurb: '' },
+      onExp,
+    },
   })
-
-  // EXP is worth 1 per problem solved, but only paid once a Pokémon is defeated:
-  // on each faint we award every problem solved since the last one (i.e. the
-  // ones that beat this Pokémon). Problems solved in a fight the player loses
-  // are never paid.
-  const paidSolved = useRef(0)
-  const paidDefeats = useRef(0)
-  const [gained, setGained] = useState(0)
-  const { solved, defeated } = state.context
-  useEffect(() => {
-    // A fresh run (RETRY) resets both counters — resync without paying.
-    if (defeated < paidDefeats.current || solved < paidSolved.current) {
-      paidDefeats.current = defeated
-      paidSolved.current = solved
-      setGained(0)
-      return
-    }
-    if (defeated > paidDefeats.current) {
-      paidDefeats.current = defeated
-      const award = solved - paidSolved.current
-      paidSolved.current = solved
-      if (award > 0) {
-        onExp(award)
-        setGained((g) => g + award)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defeated, solved])
 
   // The machine's `exit` state is final; when reached, hand control back.
   useEffect(() => {
@@ -68,10 +44,10 @@ export function MathGame({
         <Battle state={state} send={send} buddy={buddy} paused={paused} />
       )}
       {state.matches('victory') && (
-        <Result kind="win" buddy={buddy} gained={gained} send={send} />
+        <Result kind="win" buddy={buddy} gained={state.context.expGained} send={send} />
       )}
       {state.matches('defeat') && (
-        <Result kind="lose" buddy={buddy} gained={gained} send={send} />
+        <Result kind="lose" buddy={buddy} gained={state.context.expGained} send={send} />
       )}
     </>
   )

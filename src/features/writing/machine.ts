@@ -27,8 +27,11 @@ export interface WritingContext {
   enemyHp: number // strokes still to write
   hp: number // player HP (refills each enemy)
   defeated: number
-  strokes: number // correct strokes written this run — the Writing game's EXP unit
   attackEffect: string
+  // Awards EXP to the active buddy. Supplied via input and called once per faint
+  // with the beaten Pokémon's HP — which equals the number of strokes its name
+  // took to write, so EXP reflects strokes written and is paid only on defeat.
+  onExp: (amount: number) => void
 }
 
 export type WritingEvent =
@@ -64,8 +67,8 @@ const initialContext: WritingContext = {
   enemyHp: 1,
   hp: WRITING_MAX_HP,
   defeated: 0,
-  strokes: 0,
   attackEffect: 'attack1.png',
+  onExp: () => {},
 }
 
 const T_INTRO = 800
@@ -75,6 +78,7 @@ export const writingMachine = setup({
   types: {
     context: {} as WritingContext,
     events: {} as WritingEvent,
+    input: {} as { onExp: (amount: number) => void },
   },
   guards: {
     hasMoreChars: ({ context }) =>
@@ -84,7 +88,7 @@ export const writingMachine = setup({
   },
 }).createMachine({
   id: 'writing',
-  context: initialContext,
+  context: ({ input }) => ({ ...initialContext, onExp: input.onExp }),
   initial: 'difficultySelect',
   states: {
     exit: { type: 'final' },
@@ -98,7 +102,6 @@ export const writingMachine = setup({
             order: ({ event }) => shuffledOrder(event.difficulty),
             pos: 0,
             defeated: 0,
-            strokes: 0,
           }),
         },
       },
@@ -126,7 +129,6 @@ export const writingMachine = setup({
             STROKE_OK: {
               actions: assign({
                 enemyHp: ({ context }) => Math.max(0, context.enemyHp - 1),
-                strokes: ({ context }) => context.strokes + 1,
                 attackEffect: () => chooseEffect(),
               }),
             },
@@ -153,7 +155,12 @@ export const writingMachine = setup({
         },
 
         enemyFaint: {
-          entry: assign({ defeated: ({ context }) => context.defeated + 1 }),
+          // The foe is beaten: award its HP as EXP (= strokes its name took to
+          // write). EXP is paid only here, on faint.
+          entry: [
+            assign({ defeated: ({ context }) => context.defeated + 1 }),
+            ({ context }) => context.onExp(context.enemyMaxHp),
+          ],
           after: {
             [T_FAINT]: [
               {
