@@ -8,14 +8,14 @@ import { HEROES } from './heroes'
 import { evolvedSpecies, pokedexEntry } from './pokedex'
 
 // ---- Leveling curve ----
-// EXP needed to advance FROM `level` to the next one. It grows by EXP_STEP each
-// level, so every level costs a little more than the last — nudging players to
-// take on harder problems (which pay more EXP) to keep climbing.
-const BASE_EXP = 40
-const EXP_STEP = 20
+// Levels are earned by *defeating Pokémon* — each defeated Pokémon is worth 1
+// EXP (see defeatExp). The number needed to advance grows by 5 each level, so:
+//   Lv1 → Lv2: 5 Pokémon, Lv2 → Lv3: 10, Lv3 → Lv4: 15, … (5 × current level).
+// Every level therefore costs a little more than the last.
+const EXP_PER_LEVEL_STEP = 5
 
 export function expToNext(level: number): number {
-  return BASE_EXP + (level - 1) * EXP_STEP
+  return EXP_PER_LEVEL_STEP * level
 }
 
 export interface LevelInfo {
@@ -37,23 +37,11 @@ export function levelFromExp(totalExp: number): LevelInfo {
 }
 
 // ---- EXP rewards ----
-// EXP earned for defeating one foe, scaled by how hard the content is. The
-// `challenge` scalar is small and game-specific (Maths passes the child's age,
-// 5–10; Writing passes 5 / 7 / 9 for easy / medium / hard). A higher challenge
-// always pays more, so an age-7 problem is worth more than an age-6 one. Bosses
-// are worth double.
-//
-// Rewards are sized against the official evolution levels (16 / 32 / 36) so the
-// grind stays kid-friendly: a full run (4 grunts + 1 boss) pays ~480–780 EXP
-// depending on age, which reaches the first evolution (Lv16 ≈ 2700 EXP) in
-// roughly 4–6 runs, with the final stage (Lv36) as a longer-term goal.
-const DEFEAT_BASE = 30
-const DEFEAT_PER_CHALLENGE = 10
-const BOSS_MULTIPLIER = 2
-
-export function defeatExp(challenge: number, isBoss = false): number {
-  const base = DEFEAT_BASE + challenge * DEFEAT_PER_CHALLENGE
-  return isBoss ? base * BOSS_MULTIPLIER : base
+// Each defeated Pokémon is worth exactly 1 EXP, so progress is measured purely
+// in Pokémon beaten — predictable pacing regardless of age or boss (5 beaten =
+// one early level; see expToNext).
+export function defeatExp(): number {
+  return 1
 }
 
 // ---- Roster & persistence ----

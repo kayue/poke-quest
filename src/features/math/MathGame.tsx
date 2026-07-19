@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useMachine } from '@xstate/react'
 import { gameMachine, type GameEvent } from './machine'
 import { AGES } from './data'
-import { pokedexEntry } from '../../shared/pokedex'
 import { defeatExp, type Buddy } from '../../shared/progress'
 import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
@@ -30,7 +29,7 @@ export function MathGame({
   // Track how many foes we've already paid EXP for, so each defeat rewards once.
   const paidDefeats = useRef(0)
   const [gained, setGained] = useState(0)
-  const { defeated, enemyOrder, age } = state.context
+  const { defeated } = state.context
   useEffect(() => {
     // A fresh run (RETRY) resets the defeated count — resync without paying.
     if (defeated < paidDefeats.current) {
@@ -38,13 +37,10 @@ export function MathGame({
       setGained(0)
       return
     }
-    let award = 0
-    for (let i = paidDefeats.current; i < defeated; i++) {
-      const isBoss = !!pokedexEntry(enemyOrder[i])?.boss
-      award += defeatExp(age, isBoss)
-    }
-    if (award > 0) {
+    const newly = defeated - paidDefeats.current
+    if (newly > 0) {
       paidDefeats.current = defeated
+      const award = newly * defeatExp() // 1 EXP per Pokémon defeated
       onExp(award)
       setGained((g) => g + award)
     }

@@ -47,16 +47,17 @@ share folds back in — age 5 is 70% current / 30% ahead, age 10 is 80% current 
 Every buddy trains **independently** and its progress is **saved to
 `localStorage`** (key `poke-quest:progress:v1`), so it survives a reload.
 
-- **EXP** is earned each time you defeat a wild Pokémon, scaled by the challenge
-  (older ages and bosses pay more) — so an age-7 problem is worth more than an
-  age-6 one.
-- **Levels** cost progressively more EXP each time, nudging players toward
-  harder problems. The current level and an EXP bar show on the HeroSelect
-  cards, the home buddy pill, and the in-battle HP box.
-- **Evolution** happens at each species' Pokédex level. The starter lines use
-  the official main-series levels (16 / 32 / 36); Pikachu→Raichu and
-  Eevee→Vaporeon are Stone evolutions in canon (no level), so they use a
-  documented level-16 house rule. See
+- **EXP** is earned by **defeating wild Pokémon** — each Pokémon beaten is worth
+  1 EXP, regardless of age or boss, so progress is measured purely in Pokémon
+  beaten.
+- **Levels** cost `5 × current level` Pokémon each: **5** to reach Lv2, **10**
+  more for Lv3, **15** more for Lv4, and so on — every level takes a little
+  longer. The current level and an EXP bar show on the HeroSelect cards, the
+  home buddy pill, and the in-battle HP box.
+- **Evolution** happens at each species' Pokédex level, using the official
+  main-series levels (16 / 32 / 36); Pikachu→Raichu and Eevee→Vaporeon are Stone
+  evolutions in canon (no level), so they use a documented level-16 house rule.
+  At 5 Pokémon per level these are a long-haul goal (Lv16 ≈ 600 Pokémon). See
   [`src/shared/pokedex.ts`](src/shared/pokedex.ts) and
   [`src/shared/progress.ts`](src/shared/progress.ts).
 - Reaching a new level or evolution plays a full-screen **celebration
@@ -78,12 +79,12 @@ npm run typecheck  # type-check without emitting
 
 ## Testing progression (EXP / levels / evolution)
 
-A **level-up** is easy to see: a fresh buddy reaches Lv2 after beating its very
-first enemy (the first defeat gives 80–130 EXP; Lv2 needs only 40). So just
-start any battle and beat one Pokémon.
+EXP is just Pokémon-beaten count, so `exp` values below are literally "how many
+Pokémon this buddy has defeated" — Lv*N* is reached at `5 × (N-1) × N / 2`.
 
-**Evolution** needs Lv16 (~2,700 EXP ≈ 5 runs), so seed the EXP from the
-browser **DevTools → Console** instead of grinding.
+A **level-up** takes a full run: a fresh buddy reaches Lv2 after beating **5**
+Pokémon (one run). **Evolution** needs Lv16 = **600** Pokémon (~120 runs), so
+seed the EXP from the browser **DevTools → Console** instead of grinding.
 
 **See an evolution in one battle** — paste this, then start a battle and defeat
 one Pokémon:
@@ -91,7 +92,7 @@ one Pokémon:
 ```js
 const K = 'poke-quest:progress:v1'
 const s = JSON.parse(localStorage.getItem(K))
-s.mons[s.selectedId].exp = 2660   // just below Lv16 → next defeat evolves
+s.mons[s.selectedId].exp = 599   // just below Lv16 → next defeat evolves
 localStorage.setItem(K, JSON.stringify(s))
 location.reload()
 ```
@@ -101,10 +102,10 @@ crosses the threshold and plays the animation:
 
 | `exp` | Next defeat triggers |
 | --- | --- |
-| `20` | Level-up to Lv2 |
-| `2660` | Lv16 + first evolution (e.g. Bulbasaur→Ivysaur, Pikachu→Raichu) |
-| `10480` | Lv32 + Ivysaur→Venusaur |
-| `13240` | Lv36 + Charmeleon→Charizard, Wartortle→Blastoise |
+| `4` | Level-up to Lv2 |
+| `599` | Lv16 + first evolution (e.g. Bulbasaur→Ivysaur, Pikachu→Raichu) |
+| `2479` | Lv32 + Ivysaur→Venusaur |
+| `3149` | Lv36 + Charmeleon→Charizard, Wartortle→Blastoise |
 
 Make sure the buddy you seed is the one selected on the home screen (the snippet
 targets `selectedId`). **Piplup doesn't evolve** (its Gen-4 evolutions aren't in

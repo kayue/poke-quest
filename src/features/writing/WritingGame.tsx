@@ -13,16 +13,12 @@ import { charStrokes } from './strokeData'
 import { HanziQuiz, type HanziQuizHandle } from './HanziQuiz'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 import { ResultScreen } from '../../shared/ResultScreen'
-import { pokedexEntry } from '../../shared/pokedex'
 import { defeatExp, type Buddy } from '../../shared/progress'
 
 type Snapshot = SnapshotFrom<typeof writingMachine>
 type Send = (event: WritingEvent) => void
 const TIERS: WriteDifficulty[] = ['easy', 'medium', 'hard']
 const WRITE_BG = 'background2.png'
-
-// How much of a challenge each tier is, for EXP scaling (harder pays more).
-const TIER_CHALLENGE: Record<WriteDifficulty, number> = { easy: 5, medium: 7, hard: 9 }
 
 function battleSubstate(state: Snapshot): string {
   const v = state.value as { battle?: string }
@@ -48,20 +44,16 @@ export function WritingGame({
 
   // Pay EXP once per defeated foe (see MathGame for the same pattern).
   const paidDefeats = useRef(0)
-  const { defeated, order, difficulty } = state.context
+  const { defeated } = state.context
   useEffect(() => {
     if (defeated < paidDefeats.current) {
       paidDefeats.current = defeated
       return
     }
-    let award = 0
-    for (let i = paidDefeats.current; i < defeated; i++) {
-      const isBoss = !!pokedexEntry(order[i])?.boss
-      award += defeatExp(TIER_CHALLENGE[difficulty], isBoss)
-    }
-    if (award > 0) {
+    const newly = defeated - paidDefeats.current
+    if (newly > 0) {
       paidDefeats.current = defeated
-      onExp(award)
+      onExp(newly * defeatExp()) // 1 EXP per Pokémon defeated
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defeated])
