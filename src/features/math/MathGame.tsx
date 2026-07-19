@@ -10,23 +10,23 @@ type Send = (event: GameEvent) => void
 
 /** The Maths Quest activity. Runs its own state machine (with the shared
  *  buddy passed in) and calls `onExit` when the player leaves to the home.
- *  The machine awards EXP (via the `onExp` input) each time a foe is beaten —
+ *  The machine awards EXP (via the `awardExp` input) each time a foe is beaten —
  *  1 per problem it took, paid on the faint (see machine.ts `enemyFaint`). */
 export function MathGame({
   buddy,
-  onExp,
+  awardExp,
   onExit,
   paused = false,
 }: {
   buddy: Buddy
-  onExp: (amount: number) => void
+  awardExp: (amount: number) => void
   onExit: () => void
   paused?: boolean
 }) {
   const [state, send] = useMachine(gameMachine, {
     input: {
       hero: { id: buddy.baseId, name: buddy.name, sprite: buddy.sprite, blurb: '' },
-      onExp,
+      awardExp,
     },
   })
 

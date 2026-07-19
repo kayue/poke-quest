@@ -30,18 +30,18 @@ function pickEffect(): string {
 }
 
 /** The Chinese Writing activity — a stroke-order battle. The machine awards EXP
- *  (via the `onExp` input) each time a foe is beaten — 1 per stroke its name
+ *  (via the `awardExp` input) each time a foe is beaten — 1 per stroke its name
  *  took, paid on the faint (see machine.ts `enemyFaint`). */
 export function WritingGame({
   buddy,
-  onExp,
+  awardExp,
   onExit,
 }: {
   buddy: Buddy
-  onExp: (amount: number) => void
+  awardExp: (amount: number) => void
   onExit: () => void
 }) {
-  const [state, send] = useMachine(writingMachine, { input: { onExp } })
+  const [state, send] = useMachine(writingMachine, { input: { awardExp } })
 
   useEffect(() => {
     if (state.status === 'done' || state.matches('exit')) onExit()

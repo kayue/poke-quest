@@ -103,9 +103,9 @@ export function App() {
         <HeroSelect roster={roster} onSelect={selectBuddy} onBack={goHome} />
       )}
       {view === 'math' && (
-        <MathGame buddy={buddy} onExp={awardExp} onExit={goHome} paused={paused} />
+        <MathGame buddy={buddy} awardExp={awardExp} onExit={goHome} paused={paused} />
       )}
-      {view === 'writing' && <WritingGame buddy={buddy} onExp={awardExp} onExit={goHome} />}
+      {view === 'writing' && <WritingGame buddy={buddy} awardExp={awardExp} onExit={goHome} />}
 
       {head && (
         <CelebrationOverlay

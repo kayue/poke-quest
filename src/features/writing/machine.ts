@@ -31,7 +31,7 @@ export interface WritingContext {
   // Awards EXP to the active buddy. Supplied via input and called once per faint
   // with the beaten Pokémon's HP — which equals the number of strokes its name
   // took to write, so EXP reflects strokes written and is paid only on defeat.
-  onExp: (amount: number) => void
+  awardExp: (amount: number) => void
 }
 
 export type WritingEvent =
@@ -68,7 +68,7 @@ const initialContext: WritingContext = {
   hp: WRITING_MAX_HP,
   defeated: 0,
   attackEffect: 'attack1.png',
-  onExp: () => {},
+  awardExp: () => {},
 }
 
 const T_INTRO = 800
@@ -78,7 +78,7 @@ export const writingMachine = setup({
   types: {
     context: {} as WritingContext,
     events: {} as WritingEvent,
-    input: {} as { onExp: (amount: number) => void },
+    input: {} as { awardExp: (amount: number) => void },
   },
   guards: {
     hasMoreChars: ({ context }) =>
@@ -88,7 +88,7 @@ export const writingMachine = setup({
   },
 }).createMachine({
   id: 'writing',
-  context: ({ input }) => ({ ...initialContext, onExp: input.onExp }),
+  context: ({ input }) => ({ ...initialContext, awardExp: input.awardExp }),
   initial: 'difficultySelect',
   states: {
     exit: { type: 'final' },
@@ -159,7 +159,7 @@ export const writingMachine = setup({
           // write). EXP is paid only here, on faint.
           entry: [
             assign({ defeated: ({ context }) => context.defeated + 1 }),
-            ({ context }) => context.onExp(context.enemyMaxHp),
+            ({ context }) => context.awardExp(context.enemyMaxHp),
           ],
           after: {
             [T_FAINT]: [
