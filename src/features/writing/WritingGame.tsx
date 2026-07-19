@@ -13,7 +13,7 @@ import { charStrokes } from './strokeData'
 import { HanziQuiz, type HanziQuizHandle } from './HanziQuiz'
 import { BattleScene, type BattleBanner, type BattlePhase } from '../../shared/BattleScene'
 import { ResultScreen } from '../../shared/ResultScreen'
-import { defeatExp, type Buddy } from '../../shared/progress'
+import { type Buddy } from '../../shared/progress'
 
 type Snapshot = SnapshotFrom<typeof writingMachine>
 type Send = (event: WritingEvent) => void
@@ -42,21 +42,26 @@ export function WritingGame({
 }) {
   const [state, send] = useMachine(writingMachine)
 
-  // Pay EXP once per defeated foe (see MathGame for the same pattern).
+  // EXP is worth 1 per stroke, but only paid once a Pokémon is defeated: on each
+  // faint we award every stroke written since the last one (the strokes that
+  // beat this Pokémon). Strokes in a fight the player loses are never paid.
+  const paidStrokes = useRef(0)
   const paidDefeats = useRef(0)
-  const { defeated } = state.context
+  const { strokes, defeated } = state.context
   useEffect(() => {
-    if (defeated < paidDefeats.current) {
+    if (defeated < paidDefeats.current || strokes < paidStrokes.current) {
       paidDefeats.current = defeated
+      paidStrokes.current = strokes
       return
     }
-    const newly = defeated - paidDefeats.current
-    if (newly > 0) {
+    if (defeated > paidDefeats.current) {
       paidDefeats.current = defeated
-      onExp(newly * defeatExp()) // 1 EXP per Pokémon defeated
+      const award = strokes - paidStrokes.current
+      paidStrokes.current = strokes
+      if (award > 0) onExp(award)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defeated])
+  }, [defeated, strokes])
 
   useEffect(() => {
     if (state.status === 'done' || state.matches('exit')) onExit()

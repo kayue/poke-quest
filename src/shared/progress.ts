@@ -8,9 +8,10 @@ import { HEROES } from './heroes'
 import { evolvedSpecies, pokedexEntry } from './pokedex'
 
 // ---- Leveling curve ----
-// Levels are earned by *defeating Pokémon* — each defeated Pokémon is worth 1
-// EXP (see defeatExp). The number needed to advance grows by 5 each level, so:
-//   Lv1 → Lv2: 5 Pokémon, Lv2 → Lv3: 10, Lv3 → Lv4: 15, … (5 × current level).
+// EXP is granted by each game from its own unit of practice (Maths: 1 per
+// problem solved; Writing: 1 per stroke written). The amount needed to advance
+// grows by 5 each level, so:
+//   Lv1 → Lv2: 5 EXP, Lv2 → Lv3: 10, Lv3 → Lv4: 15, … (5 × current level).
 // Every level therefore costs a little more than the last.
 const EXP_PER_LEVEL_STEP = 5
 
@@ -36,13 +37,9 @@ export function levelFromExp(totalExp: number): LevelInfo {
   return { level, expIntoLevel: remaining, expForNext: expToNext(level), totalExp }
 }
 
-// ---- EXP rewards ----
-// Each defeated Pokémon is worth exactly 1 EXP, so progress is measured purely
-// in Pokémon beaten — predictable pacing regardless of age or boss (5 beaten =
-// one early level; see expToNext).
-export function defeatExp(): number {
-  return 1
-}
+// EXP rewards are defined by each game, not here: the Maths Quest grants 1 EXP
+// per problem solved, and the Writing game grants 1 EXP per stroke written. Both
+// simply call the awardExp callback with the amount earned.
 
 // ---- Roster & persistence ----
 export interface OwnedMon {

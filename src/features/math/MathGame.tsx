@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useMachine } from '@xstate/react'
 import { gameMachine, type GameEvent } from './machine'
 import { AGES } from './data'
-import { defeatExp, type Buddy } from '../../shared/progress'
+import { type Buddy } from '../../shared/progress'
 import { ResultScreen } from '../../shared/ResultScreen'
 import { Battle } from './Battle'
 
@@ -26,26 +26,33 @@ export function MathGame({
     input: { hero: { id: buddy.baseId, name: buddy.name, sprite: buddy.sprite, blurb: '' } },
   })
 
-  // Track how many foes we've already paid EXP for, so each defeat rewards once.
+  // EXP is worth 1 per problem solved, but only paid once a Pokémon is defeated:
+  // on each faint we award every problem solved since the last one (i.e. the
+  // ones that beat this Pokémon). Problems solved in a fight the player loses
+  // are never paid.
+  const paidSolved = useRef(0)
   const paidDefeats = useRef(0)
   const [gained, setGained] = useState(0)
-  const { defeated } = state.context
+  const { solved, defeated } = state.context
   useEffect(() => {
-    // A fresh run (RETRY) resets the defeated count — resync without paying.
-    if (defeated < paidDefeats.current) {
+    // A fresh run (RETRY) resets both counters — resync without paying.
+    if (defeated < paidDefeats.current || solved < paidSolved.current) {
       paidDefeats.current = defeated
+      paidSolved.current = solved
       setGained(0)
       return
     }
-    const newly = defeated - paidDefeats.current
-    if (newly > 0) {
+    if (defeated > paidDefeats.current) {
       paidDefeats.current = defeated
-      const award = newly * defeatExp() // 1 EXP per Pokémon defeated
-      onExp(award)
-      setGained((g) => g + award)
+      const award = solved - paidSolved.current
+      paidSolved.current = solved
+      if (award > 0) {
+        onExp(award)
+        setGained((g) => g + award)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defeated])
+  }, [defeated, solved])
 
   // The machine's `exit` state is final; when reached, hand control back.
   useEffect(() => {

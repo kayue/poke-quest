@@ -27,6 +27,7 @@ export interface WritingContext {
   enemyHp: number // strokes still to write
   hp: number // player HP (refills each enemy)
   defeated: number
+  strokes: number // correct strokes written this run — the Writing game's EXP unit
   attackEffect: string
 }
 
@@ -63,6 +64,7 @@ const initialContext: WritingContext = {
   enemyHp: 1,
   hp: WRITING_MAX_HP,
   defeated: 0,
+  strokes: 0,
   attackEffect: 'attack1.png',
 }
 
@@ -96,6 +98,7 @@ export const writingMachine = setup({
             order: ({ event }) => shuffledOrder(event.difficulty),
             pos: 0,
             defeated: 0,
+            strokes: 0,
           }),
         },
       },
@@ -123,6 +126,7 @@ export const writingMachine = setup({
             STROKE_OK: {
               actions: assign({
                 enemyHp: ({ context }) => Math.max(0, context.enemyHp - 1),
+                strokes: ({ context }) => context.strokes + 1,
                 attackEffect: () => chooseEffect(),
               }),
             },

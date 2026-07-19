@@ -24,6 +24,7 @@ export interface GameContext {
   hp: number
   score: number
   defeated: number
+  solved: number // correct answers this run — the Maths Quest's EXP unit
   lastAnswerCorrect: boolean | null
   lastSelected: number | null
   attackEffect: string
@@ -78,6 +79,7 @@ const initialContext: GameContext = {
   hp: PLAYER_MAX_HP,
   score: 0,
   defeated: 0,
+  solved: 0,
   lastAnswerCorrect: null,
   lastSelected: null,
   attackEffect: 'attack1.png',
@@ -118,6 +120,7 @@ export const gameMachine = setup({
         hp: PLAYER_MAX_HP,
         score: 0,
         defeated: 0,
+        solved: 0,
         enemy: null,
         problem: null,
         lastAnswerCorrect: null,
@@ -210,6 +213,7 @@ export const gameMachine = setup({
             enemy: ({ context }) =>
               context.enemy ? { ...context.enemy, hp: context.enemy.hp - 1 } : null,
             score: ({ context }) => context.score + 10,
+            solved: ({ context }) => context.solved + 1,
             attackEffect: () => chooseEffect(),
           }),
           after: {

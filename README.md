@@ -47,18 +47,20 @@ share folds back in — age 5 is 70% current / 30% ahead, age 10 is 80% current 
 Every buddy trains **independently** and its progress is **saved to
 `localStorage`** (key `poke-quest:progress:v1`), so it survives a reload.
 
-- **EXP** is earned by **defeating wild Pokémon** — each Pokémon beaten is worth
-  1 EXP, regardless of age or boss, so progress is measured purely in Pokémon
-  beaten.
-- **Levels** cost `5 × current level` Pokémon each: **5** to reach Lv2, **10**
-  more for Lv3, **15** more for Lv4, and so on — every level takes a little
-  longer. The current level and an EXP bar show on the HeroSelect cards, the
-  home buddy pill, and the in-battle HP box.
+- **EXP** is earned from each game's own unit of practice — the **Maths Quest**
+  counts each **problem solved** (correct answer) and the **Writing** game counts
+  each **stroke written** — but it's only **paid out when a Pokémon is
+  defeated** (the whole fight's worth lands at the faint; a fight you lose pays
+  nothing). Each game defines this itself — there's no shared reward function.
+- **Levels** cost `5 × current level` EXP each: **5** to reach Lv2, **10** more
+  for Lv3, **15** more for Lv4, and so on — every level takes a little longer.
+  The current level and an EXP bar show on the HeroSelect cards, the home buddy
+  pill, and the in-battle HP box.
 - **Evolution** happens at each species' Pokédex level, using the official
   main-series levels (16 / 32 / 36); Pikachu→Raichu and Eevee→Vaporeon are Stone
   evolutions in canon (no level), so they use a documented level-16 house rule.
-  At 5 Pokémon per level these are a long-haul goal (Lv16 ≈ 600 Pokémon). See
-  [`src/shared/pokedex.ts`](src/shared/pokedex.ts) and
+  Lv16 is 600 EXP — roughly 600 solved problems (~25 Maths runs) or 600 strokes.
+  See [`src/shared/pokedex.ts`](src/shared/pokedex.ts) and
   [`src/shared/progress.ts`](src/shared/progress.ts).
 - Reaching a new level or evolution plays a full-screen **celebration
   animation** (see [`src/shared/Celebration.tsx`](src/shared/Celebration.tsx)).
@@ -79,15 +81,15 @@ npm run typecheck  # type-check without emitting
 
 ## Testing progression (EXP / levels / evolution)
 
-EXP is just Pokémon-beaten count, so `exp` values below are literally "how many
-Pokémon this buddy has defeated" — Lv*N* is reached at `5 × (N-1) × N / 2`.
+`exp` is the buddy's total EXP (paid at each defeat: problems solved / strokes
+written to beat that foe) — Lv*N* is reached at `5 × (N-1) × N / 2` EXP.
 
-A **level-up** takes a full run: a fresh buddy reaches Lv2 after beating **5**
-Pokémon (one run). **Evolution** needs Lv16 = **600** Pokémon (~120 runs), so
-seed the EXP from the browser **DevTools → Console** instead of grinding.
+A **level-up** is quick to see: EXP lands at each defeat (a regular foe pays ~4
+in Maths, a boss ~8), so a fresh buddy hits Lv2 (5 EXP) after ~2 foes.
+**Evolution** needs Lv16 = **600** EXP (~25 Maths runs), so seed the EXP from the
+browser **DevTools → Console** instead of grinding.
 
-**See an evolution in one battle** — paste this, then start a battle and defeat
-one Pokémon:
+**See an evolution on the next defeat** — paste this, then defeat one Pokémon:
 
 ```js
 const K = 'poke-quest:progress:v1'
