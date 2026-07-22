@@ -108,6 +108,9 @@ function WritingBattle({ state, send, buddy }: { state: Snapshot; send: Send; bu
   const pokemon = pokemonById(ctx.order[ctx.pos])
   const chars = chineseChars(pokemon?.nameZh ?? '')
   const char = chars[ctx.charIndex]
+  // The last foe of the round is the legendary boss: no outline to trace, so we
+  // play a stroke-order demo first and the child writes it from memory.
+  const isBoss = ctx.pos === ctx.order.length - 1
 
   const quizRef = useRef<HanziQuizHandle>(null)
   const [caption, setCaption] = useState('跟著筆順寫一寫')
@@ -120,10 +123,11 @@ function WritingBattle({ state, send, buddy }: { state: Snapshot; send: Send; bu
     banner: null,
   })
 
-  // Reset the caption when the character changes.
+  // Reset the caption when the character changes. The boss opens on a "watch the
+  // demo" cue; onQuizReady flips it back once the demo ends and writing begins.
   useEffect(() => {
-    setCaption('跟著筆順寫一寫')
-  }, [ctx.charIndex, ctx.pos])
+    setCaption(isBoss ? '👀 睇示範，記住點寫！' : '跟著筆順寫一寫')
+  }, [ctx.charIndex, ctx.pos, isBoss])
 
   const phase: BattlePhase =
     sub === 'intro' ? 'intro' : sub === 'enemyFaint' ? 'faint' : 'active'
@@ -213,9 +217,12 @@ function WritingBattle({ state, send, buddy }: { state: Snapshot; send: Send; bu
                 ref={quizRef}
                 char={char}
                 size={260}
+                showOutline={!isBoss}
+                demoFirst={isBoss}
                 onComplete={handleComplete}
                 onMistake={handleMistake}
                 onCorrectStroke={handleCorrectStroke}
+                onQuizReady={() => setCaption('跟著筆順寫一寫')}
                 onLoadError={() => setCaption('這個字載入失敗')}
               />
             </div>

@@ -22,6 +22,7 @@ export interface WritingPokemon {
   sprite: string // filename in /assets/pokemon
   nameZh: string // Traditional Chinese name
   english: string
+  legendary: boolean // headlines a round as the outline-less final boss
 }
 
 /** True when every character of the name has a known stroke count. */
@@ -30,7 +31,18 @@ function isWritable(entry: PokedexEntry): boolean {
 }
 
 export const WRITING_POKEMON: WritingPokemon[] = POKEDEX.filter(isWritable).map(
-  (p) => ({ id: p.id, sprite: p.sprite, nameZh: p.nameZh, english: p.nameEn }),
+  (p) => ({
+    id: p.id,
+    sprite: p.sprite,
+    nameZh: p.nameZh,
+    english: p.nameEn,
+    legendary: !!p.legendary,
+  }),
+)
+
+/** The writable legendary Pokémon — one headlines each round as the final boss. */
+export const LEGENDARY_POKEMON: WritingPokemon[] = WRITING_POKEMON.filter(
+  (p) => p.legendary,
 )
 
 /** Split a name into its individual Chinese characters. */

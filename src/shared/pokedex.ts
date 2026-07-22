@@ -159,9 +159,9 @@ export const POKEDEX: PokedexEntry[] = [
   // House rule: Eevee→Vaporeon is a Water Stone evolution in canon (no level),
   // gated here at 16 to match a stage-1 line's first evolution.
   { id: 'eevee', sprite: 'eevee.png', nameEn: "Eevee", nameZh: '伊貝', evolvesTo: 'vaporeon', evolveLevel: 16 },
-  { id: 'vaporeon', sprite: 'vaporeon.png', nameEn: "Vaporeon", nameZh: '水伊貝' },
-  { id: 'jolteon', sprite: 'jolteon.png', nameEn: "Jolteon", nameZh: '雷伊貝' },
-  { id: 'flareon', sprite: 'flareon.png', nameEn: "Flareon", nameZh: '火伊貝' },
+  { id: 'vaporeon', sprite: 'vaporeon.png', nameEn: "Vaporeon", nameZh: '水伊貝', legendary: true },
+  { id: 'jolteon', sprite: 'jolteon.png', nameEn: "Jolteon", nameZh: '雷伊貝', legendary: true },
+  { id: 'flareon', sprite: 'flareon.png', nameEn: "Flareon", nameZh: '火伊貝', legendary: true },
   { id: 'porygon', sprite: 'porygon.png', nameEn: "Porygon", nameZh: '立方獸' },
   { id: 'omanyte', sprite: 'omanyte.png', nameEn: "Omanyte", nameZh: '菊石獸' },
   { id: 'omastar', sprite: 'omastar.png', nameEn: "Omastar", nameZh: '多刺菊石獸' },

@@ -5,9 +5,13 @@
 // hit (enemy HP = total strokes of the name), every mistake hurts the player.
 // Finishing the whole name faints it and the next Pokémon appears — no
 // celebration screen, just straight into the next foe.
+//
+// The final foe of every round is a legendary "boss": its name is quizzed with
+// no outline shown (see WritingGame), so the round climbs to a real challenge.
 import { setup, assign } from 'xstate'
 import {
   chineseChars,
+  LEGENDARY_POKEMON,
   pokemonByDifficulty,
   pokemonById,
   totalStrokes,
@@ -48,14 +52,25 @@ function currentName(ctx: WritingContext): string {
 function chooseEffect(): string {
   return `attack${1 + Math.floor(Math.random() * 7)}.png`
 }
-/** 5 random Pokémon ids from a difficulty tier, in random order — one round. */
-function shuffledOrder(difficulty: WriteDifficulty): string[] {
-  const ids = pokemonByDifficulty(difficulty).map((p) => p.id)
-  for (let i = ids.length - 1; i > 0; i--) {
+/** Fisher–Yates shuffle, in place. */
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[ids[i], ids[j]] = [ids[j], ids[i]]
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
   }
-  return ids.slice(0, ROUND_SIZE)
+  return arr
+}
+
+/** One round: up to ROUND_SIZE-1 random non-legendary Pokémon from the tier,
+ *  capped off with a single random legendary as the final boss. */
+function shuffledOrder(difficulty: WriteDifficulty): string[] {
+  const regular = shuffle(
+    pokemonByDifficulty(difficulty)
+      .filter((p) => !p.legendary)
+      .map((p) => p.id),
+  ).slice(0, ROUND_SIZE - 1)
+  const boss = shuffle(LEGENDARY_POKEMON.map((p) => p.id))[0]
+  return boss ? [...regular, boss] : regular
 }
 
 const initialContext: WritingContext = {

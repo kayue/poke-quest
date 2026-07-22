@@ -18,18 +18,37 @@ export interface HanziQuizHandle {
 interface Props {
   char: string
   size?: number
+  /** Show the faint grey outline to trace over. Off for the legendary boss so
+   *  the child writes from memory (harder). Defaults to true. */
+  showOutline?: boolean
+  /** Play the full stroke-order animation once before the quiz begins, so the
+   *  child sees what to write — used when there's no outline. Defaults to false. */
+  demoFirst?: boolean
   onComplete: (mistakes: number) => void
   onCorrectStroke?: () => void
   /** Fired on every wrong stroke. `mistakesOnStroke` is how many times the
    *  *current* stroke has been missed (1 = first miss on this stroke). */
   onMistake?: (mistakesOnStroke: number) => void
+  /** Fired when the interactive quiz starts accepting input — i.e. after the
+   *  `demoFirst` animation finishes (or immediately when there's no demo). */
+  onQuizReady?: () => void
   onLoadError?: () => void
 }
 
 /** Renders a single Traditional Chinese character as a hanzi-writer
  *  stroke-order quiz inside a 田字格 practice grid. */
 export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
-  { char, size = 300, onComplete, onCorrectStroke, onMistake, onLoadError },
+  {
+    char,
+    size = 300,
+    showOutline = true,
+    demoFirst = false,
+    onComplete,
+    onCorrectStroke,
+    onMistake,
+    onQuizReady,
+    onLoadError,
+  },
   ref,
 ) {
   const targetRef = useRef<HTMLDivElement>(null)
@@ -38,8 +57,8 @@ export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
   const [error, setError] = useState(false)
 
   // Keep the latest callbacks without forcing the writer to be recreated.
-  const cbs = useRef({ onComplete, onCorrectStroke, onMistake, onLoadError })
-  cbs.current = { onComplete, onCorrectStroke, onMistake, onLoadError }
+  const cbs = useRef({ onComplete, onCorrectStroke, onMistake, onQuizReady, onLoadError })
+  cbs.current = { onComplete, onCorrectStroke, onMistake, onQuizReady, onLoadError }
 
   const startQuiz = useCallback((writer: HanziWriter) => {
     writer.quiz({
@@ -49,6 +68,7 @@ export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
       onMistake: (strokeData) => cbs.current.onMistake?.(strokeData.mistakesOnStroke),
       onComplete: (summary) => cbs.current.onComplete(summary.totalMistakes),
     })
+    cbs.current.onQuizReady?.()
   }, [])
 
   useEffect(() => {
@@ -57,12 +77,13 @@ export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
     el.innerHTML = ''
     setLoading(true)
     setError(false)
+    let cancelled = false
 
     const writer = HanziWriter.create(el, char, {
       width: size,
       height: size,
       padding: 6,
-      showOutline: true,
+      showOutline,
       showCharacter: false,
       strokeColor: '#2a2540',
       radicalColor: '#e0533d',
@@ -80,9 +101,19 @@ export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
       },
     })
     writerRef.current = writer
-    startQuiz(writer)
+    if (demoFirst) {
+      // Show the child what to write, then hand over to the quiz.
+      writer.animateCharacter({
+        onComplete: () => {
+          if (!cancelled) startQuiz(writer)
+        },
+      })
+    } else {
+      startQuiz(writer)
+    }
 
     return () => {
+      cancelled = true
       try {
         writer.cancelQuiz()
       } catch {
@@ -91,7 +122,7 @@ export const HanziQuiz = forwardRef<HanziQuizHandle, Props>(function HanziQuiz(
       el.innerHTML = ''
       writerRef.current = null
     }
-  }, [char, size, startQuiz])
+  }, [char, size, showOutline, demoFirst, startQuiz])
 
   useImperativeHandle(ref, () => ({
     animate: () => {
