@@ -13,7 +13,7 @@ import { evolvedSpecies, pokedexEntry } from './pokedex'
 // written). The amount needed to advance grows by 5 each level, so:
 //   Lv1 → Lv2: 5 EXP, Lv2 → Lv3: 10, Lv3 → Lv4: 15, … (5 × current level).
 // Every level therefore costs a little more than the last.
-const EXP_PER_LEVEL_STEP = 5
+const EXP_PER_LEVEL_STEP = 10
 
 export function expToNext(level: number): number {
   return EXP_PER_LEVEL_STEP * level
