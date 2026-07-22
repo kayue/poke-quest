@@ -187,7 +187,7 @@ export const gameMachine = setup({
           },
         },
 
-        // The 10s answer timer expired: take a single hit, then let the
+        // The answer timer expired: take a single hit, then let the
         // player keep working the same problem. The timer does NOT re-arm
         // (answeringLate has no TIMEOUT handler), so damage lands once.
         timeout: {

@@ -11,8 +11,12 @@ type Send = (event: GameEvent) => void
 const PRAISE = ['Great!', 'Awesome!', 'Super!', 'Nice one!', 'Boom!', 'Yeah!', 'Wow!']
 const ENCOURAGE = ['Try again!', 'Almost!', 'Oops!', "You've got this!"]
 
-// Seconds the player gets to answer before taking one hit.
-const ANSWER_SECONDS = 10
+// Seconds the player gets to answer before taking one hit. Older players get
+// more time (an easier pace): 10s at age 6, 20s at age 7, 30s at age 8, and so
+// on (+10s per year). Age 5 has no lower neighbour, so it's floored at 10s.
+function answerSeconds(age: number): number {
+  return Math.max(10, (age - 5) * 10)
+}
 
 function battleSubstate(state: Snapshot): string {
   const v = state.value as { battle?: string }
@@ -120,7 +124,7 @@ export function Battle({
       onHome={() => send({ type: 'HOME' })}
     >
       {sub === 'answering' && !paused && (
-        <Countdown seconds={ANSWER_SECONDS} onExpire={() => send({ type: 'TIMEOUT' })} />
+        <Countdown seconds={answerSeconds(ctx.age)} onExpire={() => send({ type: 'TIMEOUT' })} />
       )}
       <Equation
         problem={problem}
