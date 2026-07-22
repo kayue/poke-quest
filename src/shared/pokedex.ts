@@ -13,23 +13,24 @@ export interface PokedexEntry {
   sprite: string // filename in /assets/pokemon
   nameEn: string
   nameZh: string // Traditional Chinese name
-  boss?: boolean // legendary / powerful — games may headline these as bosses
+  powerful?: boolean // a strong Pokémon — games may headline these as bosses
   // Evolution: when a buddy the player trains reaches `evolveLevel`, it evolves
   // into `evolvesTo` (another Pokédex id). Both are set together, or neither.
   evolvesTo?: string
   evolveLevel?: number
+  legendary?: boolean
 }
 
 export const POKEDEX: PokedexEntry[] = [
   { id: 'bulbasaur', sprite: 'bulbasaur.png', nameEn: "Bulbasaur", nameZh: '奇異種子', evolvesTo: 'ivysaur', evolveLevel: 16 },
   { id: 'ivysaur', sprite: 'ivysaur.png', nameEn: "Ivysaur", nameZh: '奇異草', evolvesTo: 'venusaur', evolveLevel: 32 },
-  { id: 'venusaur', sprite: 'venusaur.png', nameEn: "Venusaur", nameZh: '奇異花' , boss: true },
+  { id: 'venusaur', sprite: 'venusaur.png', nameEn: "Venusaur", nameZh: '奇異花' , powerful: true },
   { id: 'charmander', sprite: 'charmander.png', nameEn: "Charmander", nameZh: '小火龍', evolvesTo: 'charmeleon', evolveLevel: 16 },
   { id: 'charmeleon', sprite: 'charmeleon.png', nameEn: "Charmeleon", nameZh: '火恐龍', evolvesTo: 'charizard', evolveLevel: 36 },
-  { id: 'charizard', sprite: 'charizard.png', nameEn: "Charizard", nameZh: '噴火龍' , boss: true },
+  { id: 'charizard', sprite: 'charizard.png', nameEn: "Charizard", nameZh: '噴火龍' , powerful: true },
   { id: 'squirtle', sprite: 'squirtle.png', nameEn: "Squirtle", nameZh: '車厘龜', evolvesTo: 'wartortle', evolveLevel: 16 },
   { id: 'wartortle', sprite: 'wartortle.png', nameEn: "Wartortle", nameZh: '卡美龜', evolvesTo: 'blastoise', evolveLevel: 36 },
-  { id: 'blastoise', sprite: 'blastoise.png', nameEn: "Blastoise", nameZh: '水箭龜' , boss: true },
+  { id: 'blastoise', sprite: 'blastoise.png', nameEn: "Blastoise", nameZh: '水箭龜' , powerful: true },
   { id: 'caterpie', sprite: 'caterpie.png', nameEn: "Caterpie", nameZh: '綠毛蟲' },
   { id: 'metapod', sprite: 'metapod.png', nameEn: "Metapod", nameZh: '鐵甲蟲' },
   { id: 'butterfree', sprite: 'butterfree.png', nameEn: "Butterfree", nameZh: '巴他蝶' },
@@ -81,16 +82,16 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'mankey', sprite: 'mankey.png', nameEn: "Mankey", nameZh: '猴怪' },
   { id: 'primeape', sprite: 'primeape.png', nameEn: "Primeape", nameZh: '火爆猴' },
   { id: 'growlithe', sprite: 'growlithe.png', nameEn: "Growlithe", nameZh: '護主犬' },
-  { id: 'arcanine', sprite: 'arcanine.png', nameEn: "Arcanine", nameZh: '奉神犬' , boss: true },
+  { id: 'arcanine', sprite: 'arcanine.png', nameEn: "Arcanine", nameZh: '奉神犬' , powerful: true },
   { id: 'poliwag', sprite: 'poliwag.png', nameEn: "Poliwag", nameZh: '蚊香蝌蚪' },
   { id: 'poliwhirl', sprite: 'poliwhirl.png', nameEn: "Poliwhirl", nameZh: '蚊香蛙' },
   { id: 'poliwrath', sprite: 'poliwrath.png', nameEn: "Poliwrath", nameZh: '大力蛙' },
   { id: 'abra', sprite: 'abra.png', nameEn: "Abra", nameZh: '卡斯' },
   { id: 'kadabra', sprite: 'kadabra.png', nameEn: "Kadabra", nameZh: '尤基納' },
-  { id: 'alakazam', sprite: 'alakazam.png', nameEn: "Alakazam", nameZh: '富迪' , boss: true },
+  { id: 'alakazam', sprite: 'alakazam.png', nameEn: "Alakazam", nameZh: '富迪' , powerful: true },
   { id: 'machop', sprite: 'machop.png', nameEn: "Machop", nameZh: '鐵腕' },
   { id: 'machoke', sprite: 'machoke.png', nameEn: "Machoke", nameZh: '大力' },
-  { id: 'machamp', sprite: 'machamp.png', nameEn: "Machamp", nameZh: '怪力' , boss: true },
+  { id: 'machamp', sprite: 'machamp.png', nameEn: "Machamp", nameZh: '怪力' , powerful: true },
   { id: 'bellsprout', sprite: 'bellsprout.png', nameEn: "Bellsprout", nameZh: '喇叭芽' },
   { id: 'weepinbell', sprite: 'weepinbell.png', nameEn: "Weepinbell", nameZh: '口呆花' },
   { id: 'victreebel', sprite: 'victreebel.png', nameEn: "Victreebel", nameZh: '大食花' },
@@ -98,7 +99,7 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'tentacruel', sprite: 'tentacruel.png', nameEn: "Tentacruel", nameZh: '多腳水母' },
   { id: 'geodude', sprite: 'geodude.png', nameEn: "Geodude", nameZh: '小拳石' },
   { id: 'graveler', sprite: 'graveler.png', nameEn: "Graveler", nameZh: '滾動石' },
-  { id: 'golem', sprite: 'golem.png', nameEn: "Golem", nameZh: '滾動岩' , boss: true },
+  { id: 'golem', sprite: 'golem.png', nameEn: "Golem", nameZh: '滾動岩' , powerful: true },
   { id: 'ponyta', sprite: 'ponyta.png', nameEn: "Ponyta", nameZh: '小火馬' },
   { id: 'rapidash', sprite: 'rapidash.png', nameEn: "Rapidash", nameZh: '烈焰馬' },
   { id: 'slowpoke', sprite: 'slowpoke.png', nameEn: "Slowpoke", nameZh: '小呆獸' },
@@ -116,7 +117,7 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'cloyster', sprite: 'cloyster.png', nameEn: "Cloyster", nameZh: '鐵甲貝' },
   { id: 'gastly', sprite: 'gastly.png', nameEn: "Gastly", nameZh: '鬼斯' },
   { id: 'haunter', sprite: 'haunter.png', nameEn: "Haunter", nameZh: '鬼斯通' },
-  { id: 'gengar', sprite: 'gengar.png', nameEn: "Gengar", nameZh: '耿鬼' , boss: true },
+  { id: 'gengar', sprite: 'gengar.png', nameEn: "Gengar", nameZh: '耿鬼' , powerful: true },
   { id: 'onix', sprite: 'onix.png', nameEn: "Onix", nameZh: '大岩蛇' },
   { id: 'drowzee', sprite: 'drowzee.png', nameEn: "Drowzee", nameZh: '食夢獸' },
   { id: 'hypno', sprite: 'hypno.png', nameEn: "Hypno", nameZh: '催眠獸' },
@@ -152,8 +153,8 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'pinsir', sprite: 'pinsir.png', nameEn: "Pinsir", nameZh: '鉗刀甲蟲' },
   { id: 'tauros', sprite: 'tauros.png', nameEn: "Tauros", nameZh: '大隻牛' },
   { id: 'magikarp', sprite: 'magikarp.png', nameEn: "Magikarp", nameZh: '鯉魚王' },
-  { id: 'gyarados', sprite: 'gyarados.png', nameEn: "Gyarados", nameZh: '鯉魚龍' , boss: true },
-  { id: 'lapras', sprite: 'lapras.png', nameEn: "Lapras", nameZh: '背背龍' , boss: true },
+  { id: 'gyarados', sprite: 'gyarados.png', nameEn: "Gyarados", nameZh: '鯉魚龍' , powerful: true },
+  { id: 'lapras', sprite: 'lapras.png', nameEn: "Lapras", nameZh: '背背龍' , powerful: true },
   { id: 'ditto', sprite: 'ditto.png', nameEn: "Ditto", nameZh: '百變怪' },
   // House rule: Eevee→Vaporeon is a Water Stone evolution in canon (no level),
   // gated here at 16 to match a stage-1 line's first evolution.
@@ -166,25 +167,25 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'omastar', sprite: 'omastar.png', nameEn: "Omastar", nameZh: '多刺菊石獸' },
   { id: 'kabuto', sprite: 'kabuto.png', nameEn: "Kabuto", nameZh: '萬年蟲' },
   { id: 'kabutops', sprite: 'kabutops.png', nameEn: "Kabutops", nameZh: '鐮刀蟲' },
-  { id: 'aerodactyl', sprite: 'aerodactyl.png', nameEn: "Aerodactyl", nameZh: '化石飛龍' , boss: true },
-  { id: 'snorlax', sprite: 'snorlax.png', nameEn: "Snorlax", nameZh: '卡比獸' , boss: true },
-  { id: 'articuno', sprite: 'articuno.png', nameEn: "Articuno", nameZh: '急凍鳥' , boss: true },
-  { id: 'zapdos', sprite: 'zapdos.png', nameEn: "Zapdos", nameZh: '雷鳥' , boss: true },
-  { id: 'moltres', sprite: 'moltres.png', nameEn: "Moltres", nameZh: '火鳥' , boss: true },
+  { id: 'aerodactyl', sprite: 'aerodactyl.png', nameEn: "Aerodactyl", nameZh: '化石飛龍' , powerful: true },
+  { id: 'snorlax', sprite: 'snorlax.png', nameEn: "Snorlax", nameZh: '卡比獸' , powerful: true },
+  { id: 'articuno', sprite: 'articuno.png', nameEn: "Articuno", nameZh: '急凍鳥' , powerful: true, legendary: true },
+  { id: 'zapdos', sprite: 'zapdos.png', nameEn: "Zapdos", nameZh: '雷鳥' , powerful: true, legendary: true },
+  { id: 'moltres', sprite: 'moltres.png', nameEn: "Moltres", nameZh: '火鳥' , powerful: true, legendary: true },
   { id: 'dratini', sprite: 'dratini.png', nameEn: "Dratini", nameZh: '迷你龍' },
   { id: 'dragonair', sprite: 'dragonair.png', nameEn: "Dragonair", nameZh: '哈古龍' },
-  { id: 'dragonite', sprite: 'dragonite.png', nameEn: "Dragonite", nameZh: '啟暴龍' , boss: true },
-  { id: 'mewtwo', sprite: 'mewtwo.png', nameEn: "Mewtwo", nameZh: '超夢夢' , boss: true },
-  { id: 'mew', sprite: 'mew.png', nameEn: "Mew", nameZh: '夢夢' , boss: true },
+  { id: 'dragonite', sprite: 'dragonite.png', nameEn: "Dragonite", nameZh: '啟暴龍' , powerful: true },
+  { id: 'mewtwo', sprite: 'mewtwo.png', nameEn: "Mewtwo", nameZh: '超夢夢' , powerful: true, legendary: true },
+  { id: 'mew', sprite: 'mew.png', nameEn: "Mew", nameZh: '夢夢' , powerful: true, legendary: true },
   { id: 'chikorita', sprite: 'chikorita.png', nameEn: "Chikorita", nameZh: '菊草葉' },
   { id: 'bayleef', sprite: 'bayleef.png', nameEn: "Bayleef", nameZh: '月桂葉' },
-  { id: 'meganium', sprite: 'meganium.png', nameEn: "Meganium", nameZh: '大竺葵' , boss: true },
+  { id: 'meganium', sprite: 'meganium.png', nameEn: "Meganium", nameZh: '大竺葵' , powerful: true },
   { id: 'cyndaquil', sprite: 'cyndaquil.png', nameEn: "Cyndaquil", nameZh: '火球鼠' },
   { id: 'quilava', sprite: 'quilava.png', nameEn: "Quilava", nameZh: '火岩鼠' },
-  { id: 'typhlosion', sprite: 'typhlosion.png', nameEn: "Typhlosion", nameZh: '火爆獸' , boss: true },
+  { id: 'typhlosion', sprite: 'typhlosion.png', nameEn: "Typhlosion", nameZh: '火爆獸' , powerful: true },
   { id: 'totodile', sprite: 'totodile.png', nameEn: "Totodile", nameZh: '小鋸鱷' },
   { id: 'croconaw', sprite: 'croconaw.png', nameEn: "Croconaw", nameZh: '藍鱷' },
-  { id: 'feraligatr', sprite: 'feraligatr.png', nameEn: "Feraligatr", nameZh: '大力鱷' , boss: true },
+  { id: 'feraligatr', sprite: 'feraligatr.png', nameEn: "Feraligatr", nameZh: '大力鱷' , powerful: true },
   { id: 'sentret', sprite: 'sentret.png', nameEn: "Sentret", nameZh: '尾立' },
   { id: 'furret', sprite: 'furret.png', nameEn: "Furret", nameZh: '大尾立' },
   { id: 'hoothoot', sprite: 'hoothoot.png', nameEn: "Hoothoot", nameZh: '咕咕' },
@@ -205,7 +206,7 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'xatu', sprite: 'xatu.png', nameEn: "Xatu", nameZh: '天然鳥' },
   { id: 'mareep', sprite: 'mareep.png', nameEn: "Mareep", nameZh: '咩利羊' },
   { id: 'flaaffy', sprite: 'flaaffy.png', nameEn: "Flaaffy", nameZh: '茸茸羊' },
-  { id: 'ampharos', sprite: 'ampharos.png', nameEn: "Ampharos", nameZh: '電龍' , boss: true },
+  { id: 'ampharos', sprite: 'ampharos.png', nameEn: "Ampharos", nameZh: '電龍' , powerful: true },
   { id: 'bellossom', sprite: 'bellossom.png', nameEn: "Bellossom", nameZh: '美麗花' },
   { id: 'marill', sprite: 'marill.png', nameEn: "Marill", nameZh: '馬利露' },
   { id: 'azumarill', sprite: 'azumarill.png', nameEn: "Azumarill", nameZh: '馬利露麗' },
@@ -232,7 +233,7 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'forretress', sprite: 'forretress.png', nameEn: "Forretress", nameZh: '佛烈托斯' },
   { id: 'dunsparce', sprite: 'dunsparce.png', nameEn: "Dunsparce", nameZh: '土龍弟弟' },
   { id: 'gligar', sprite: 'gligar.png', nameEn: "Gligar", nameZh: '天蠍' },
-  { id: 'steelix', sprite: 'steelix.png', nameEn: "Steelix", nameZh: '大鋼蛇' , boss: true },
+  { id: 'steelix', sprite: 'steelix.png', nameEn: "Steelix", nameZh: '大鋼蛇' , powerful: true },
   { id: 'snubbull', sprite: 'snubbull.png', nameEn: "Snubbull", nameZh: '布魯' },
   { id: 'granbull', sprite: 'granbull.png', nameEn: "Granbull", nameZh: '布魯皇' },
   { id: 'qwilfish', sprite: 'qwilfish.png', nameEn: "Qwilfish", nameZh: '千針魚' },
@@ -267,15 +268,15 @@ export const POKEDEX: PokedexEntry[] = [
   { id: 'magby', sprite: 'magby.png', nameEn: "Magby", nameZh: '鴨嘴寶寶' },
   { id: 'miltank', sprite: 'miltank.png', nameEn: "Miltank", nameZh: '大奶罐' },
   { id: 'blissey', sprite: 'blissey.png', nameEn: "Blissey", nameZh: '幸福蛋' },
-  { id: 'raikou', sprite: 'raikou.png', nameEn: "Raikou", nameZh: '雷公' , boss: true },
-  { id: 'entei', sprite: 'entei.png', nameEn: "Entei", nameZh: '炎帝' , boss: true },
-  { id: 'suicune', sprite: 'suicune.png', nameEn: "Suicune", nameZh: '水君' , boss: true },
+  { id: 'raikou', sprite: 'raikou.png', nameEn: "Raikou", nameZh: '雷公' , powerful: true, legendary: true },
+  { id: 'entei', sprite: 'entei.png', nameEn: "Entei", nameZh: '炎帝' , powerful: true, legendary: true },
+  { id: 'suicune', sprite: 'suicune.png', nameEn: "Suicune", nameZh: '水君' , powerful: true, legendary: true },
   { id: 'larvitar', sprite: 'larvitar.png', nameEn: "Larvitar", nameZh: '幼基拉斯' },
   { id: 'pupitar', sprite: 'pupitar.png', nameEn: "Pupitar", nameZh: '沙基拉斯' },
-  { id: 'tyranitar', sprite: 'tyranitar.png', nameEn: "Tyranitar", nameZh: '班基拉斯' , boss: true },
-  { id: 'lugia', sprite: 'lugia.png', nameEn: "Lugia", nameZh: '利基亞' , boss: true },
-  { id: 'ho-oh', sprite: 'ho-oh.png', nameEn: "Ho-Oh", nameZh: '鳳凰' , boss: true },
-  { id: 'celebi', sprite: 'celebi.png', nameEn: "Celebi", nameZh: '時拉比' , boss: true },
+  { id: 'tyranitar', sprite: 'tyranitar.png', nameEn: "Tyranitar", nameZh: '班基拉斯' , powerful: true },
+  { id: 'lugia', sprite: 'lugia.png', nameEn: "Lugia", nameZh: '利基亞' , powerful: true, legendary: true },
+  { id: 'ho-oh', sprite: 'ho-oh.png', nameEn: "Ho-Oh", nameZh: '鳳凰' , powerful: true, legendary: true },
+  { id: 'celebi', sprite: 'celebi.png', nameEn: "Celebi", nameZh: '時拉比' , powerful: true, legendary: true },
 ]
 
 const BY_ID: Record<string, PokedexEntry> = Object.fromEntries(
@@ -305,7 +306,7 @@ export function evolvedSpecies(baseId: string, level: number): string {
 }
 
 /** Legendary / powerful Pokémon, suitable for headlining as a boss. */
-export const BOSS_POKEMON: PokedexEntry[] = POKEDEX.filter((p) => p.boss)
+export const BOSS_POKEMON: PokedexEntry[] = POKEDEX.filter((p) => p.powerful)
 
 /** Every rank-and-file Pokémon — everything not flagged as a boss. */
-export const REGULAR_POKEMON: PokedexEntry[] = POKEDEX.filter((p) => !p.boss)
+export const REGULAR_POKEMON: PokedexEntry[] = POKEDEX.filter((p) => !p.powerful)

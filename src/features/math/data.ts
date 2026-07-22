@@ -23,7 +23,7 @@ function toEnemy(dex: PokedexEntry): EnemyDef {
     id: dex.id,
     name: dex.nameEn,
     sprite: dex.sprite,
-    hp: dex.boss ? BOSS_HP : REGULAR_HP,
+    hp: dex.powerful ? BOSS_HP : REGULAR_HP,
   }
 }
 
