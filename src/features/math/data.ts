@@ -60,3 +60,11 @@ export const AGES: AgeDef[] = [
 
 export const PLAYER_MAX_HP = 100
 export const PLAYER_HURT = 20 // HP lost per wrong answer (5 wrong answers = faint)
+
+// ---- EXP rewards ----
+// EXP earned per problem solved, scaling with the player's age so older kids —
+// tackling harder sums — level up faster: 1 at age 5, then 5 per year from age
+// 6 (5, 10, 15, 20, 25). Age 5 has no lower neighbour and is pinned to 1.
+export function expPerQuestion(age: number): number {
+  return age <= 5 ? 1 : (age - 5) * 5
+}

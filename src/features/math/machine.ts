@@ -2,7 +2,14 @@
 // age -> battle -> victory/defeat -> exit
 // (The buddy hero is chosen on the home screen and passed in as input.)
 import { setup, assign } from 'xstate'
-import { BACKGROUNDS, enemyDef, PLAYER_MAX_HP, PLAYER_HURT, type EnemyDef } from './data'
+import {
+  BACKGROUNDS,
+  enemyDef,
+  expPerQuestion,
+  PLAYER_MAX_HP,
+  PLAYER_HURT,
+  type EnemyDef,
+} from './data'
 import { BOSS_POKEMON, REGULAR_POKEMON } from '../../shared/pokedex'
 import type { Hero } from '../../shared/heroes'
 import { generateProblem, type Problem } from './problems'
@@ -29,8 +36,9 @@ export interface GameContext {
   lastSelected: number | null
   attackEffect: string
   // Awards EXP to the active buddy. Supplied via input and called once per
-  // faint with the beaten Pokémon's HP — which equals the number of problems it
-  // took to defeat, so EXP reflects problems solved and is paid only on defeat.
+  // faint. The beaten Pokémon's HP equals the number of problems it took to
+  // defeat, so the award is problems × the age's per-question rate — EXP
+  // reflects problems solved and is paid only on defeat.
   awardExp: (amount: number) => void
 }
 
@@ -70,6 +78,12 @@ function spawnEnemy(ctx: GameContext): EnemyRuntime {
 
 function freshProblem(ctx: GameContext): Problem {
   return generateProblem(ctx.age)
+}
+
+/** EXP earned for beating the current enemy: one per problem solved (= the
+ *  enemy's HP) scaled by the age's per-question rate. */
+function faintExp(ctx: GameContext): number {
+  return (ctx.enemy?.maxHp ?? 0) * expPerQuestion(ctx.age)
 }
 
 const initialContext: GameContext = {
@@ -243,14 +257,15 @@ export const gameMachine = setup({
         },
 
         enemyFaint: {
-          // The foe is beaten: award its HP as EXP (= problems it took to beat)
-          // and tally it for the result screen. EXP is paid only here, on faint.
+          // The foe is beaten: award EXP for the problems it took to beat (its
+          // HP) × the age's per-question rate, and tally it for the result
+          // screen. EXP is paid only here, on faint.
           entry: [
             assign({
               defeated: ({ context }) => context.defeated + 1,
-              expGained: ({ context }) => context.expGained + (context.enemy?.maxHp ?? 0),
+              expGained: ({ context }) => context.expGained + faintExp(context),
             }),
-            ({ context }) => context.awardExp(context.enemy?.maxHp ?? 0),
+            ({ context }) => context.awardExp(faintExp(context)),
           ],
           after: {
             [T_FAINT]: [

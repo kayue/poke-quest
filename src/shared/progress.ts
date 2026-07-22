@@ -8,9 +8,9 @@ import { HEROES } from './heroes'
 import { evolvedSpecies, pokedexEntry } from './pokedex'
 
 // ---- Leveling curve ----
-// EXP is granted by each game from its own unit of practice (Maths: 1 per
-// problem solved; Writing: 1 per stroke written). The amount needed to advance
-// grows by 5 each level, so:
+// EXP is granted by each game from its own unit of practice (Maths: per problem
+// solved, scaling with age — see expPerQuestion; Writing: 1 per stroke
+// written). The amount needed to advance grows by 5 each level, so:
 //   Lv1 → Lv2: 5 EXP, Lv2 → Lv3: 10, Lv3 → Lv4: 15, … (5 × current level).
 // Every level therefore costs a little more than the last.
 const EXP_PER_LEVEL_STEP = 5
@@ -37,9 +37,10 @@ export function levelFromExp(totalExp: number): LevelInfo {
   return { level, expIntoLevel: remaining, expForNext: expToNext(level), totalExp }
 }
 
-// EXP rewards are defined by each game, not here: the Maths Quest grants 1 EXP
-// per problem solved, and the Writing game grants 1 EXP per stroke written. Both
-// simply call the awardExp callback with the amount earned.
+// EXP rewards are defined by each game, not here: the Maths Quest grants EXP
+// per problem solved that scales with the player's age (see expPerQuestion in
+// features/math/data.ts), and the Writing game grants 1 EXP per stroke written.
+// Both simply call the awardExp callback with the amount earned.
 
 // ---- Roster & persistence ----
 export interface OwnedMon {
